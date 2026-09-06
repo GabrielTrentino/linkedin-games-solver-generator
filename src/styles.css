@@ -300,6 +300,8 @@ button:disabled {
 }
 
 .banner {
+  display: grid;
+  gap: 0.6rem;
   padding: 0.6rem 0.75rem;
   border: 1px dashed var(--ok);
   background: color-mix(in srgb, var(--ok) 12%, white);
@@ -419,7 +421,7 @@ button:disabled {
 
 .ledger__row {
   display: grid;
-  grid-template-columns: 44px 1fr auto;
+  grid-template-columns: 72px 1fr auto;
   gap: 0.8rem;
   align-items: center;
   padding: 0.65rem;
@@ -432,10 +434,79 @@ button:disabled {
   display: grid;
 }
 
+.ledger__time {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 0.9rem;
+  color: var(--ink);
+}
+
 .ledger__go {
   font-family: Syne, sans-serif;
   font-weight: 700;
   color: var(--copper);
+}
+
+.qpreview {
+  width: 72px;
+  height: 72px;
+  display: grid;
+  border: 1px solid var(--ink);
+  flex: none;
+}
+
+.qpreview span {
+  min-width: 0;
+  min-height: 0;
+}
+
+.qpreview--empty {
+  background: var(--line);
+}
+
+.subnav {
+  display: flex;
+  gap: 0.6rem;
+  margin: 0 0 1.2rem;
+}
+
+.subnav a {
+  text-decoration: none;
+  padding: 0.3rem 0.7rem;
+  border: 1px solid var(--ink);
+  background: #fff;
+}
+
+.subnav a.is-on {
+  background: var(--ink);
+  color: var(--sheet);
+}
+
+.chart {
+  display: grid;
+  gap: 1rem;
+}
+
+.chart__svg {
+  width: min(100%, 40rem);
+  height: auto;
+  background: #fff;
+  border: 1px solid var(--line);
+  color: var(--mute);
+}
+
+.game-settings {
+  display: grid;
+  gap: 0.55rem;
+  padding: 0.85rem 0;
+  border-top: 1px solid var(--line);
+}
+
+.game-settings h3 {
+  margin: 0;
+}
+
+.game-settings.is-muted {
+  opacity: 0.72;
 }
 
 .empty {

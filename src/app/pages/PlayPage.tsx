@@ -55,6 +55,12 @@ export function PlayPage() {
     })();
   const playable = queensReady && attempt;
 
+  async function replay() {
+    if (!puzzleId) return;
+    const row = await startAttempt(puzzleId);
+    setAttempt(row);
+  }
+
   return (
     <section className="play-page">
       <header className="play-page__meta">
@@ -71,9 +77,11 @@ export function PlayPage() {
 
       {playable ? (
         <QueensSession
+          key={attempt.id}
           payload={puzzle.payload}
           attemptId={attempt.id}
           startedAt={attempt.startedAt}
+          onReplay={() => void replay()}
         />
       ) : (
         <>

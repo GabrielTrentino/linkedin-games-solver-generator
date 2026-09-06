@@ -1,7 +1,8 @@
 import { useRef, useState, type ChangeEvent, type FormEvent } from "react";
+import { GAMES } from "../../engines/core/types";
+import type { HintLevel } from "../../engines/core/types";
 import { exportSave, importSave, type SaveFile } from "../../persist/db";
 import { loadSettings, saveSettings, type AppSettings } from "../../persist/settings";
-import type { HintLevel } from "../../engines/core/types";
 
 export function SettingsPage() {
   const [settings, setSettings] = useState<AppSettings>(() => loadSettings());
@@ -53,43 +54,57 @@ export function SettingsPage() {
     <section className="settings">
       <header className="mesa__head">
         <p className="eyebrow">Ajustes</p>
-        <h2>Como o tabuleiro se comporta</h2>
+        <h2>Como cada jogo se comporta</h2>
       </header>
 
       <form className="stack" onSubmit={onSubmit}>
-        <label className="check">
-          <input
-            type="checkbox"
-            checked={settings.autoCheck}
-            onChange={(e) => persist({ ...settings, autoCheck: e.target.checked })}
-          />
-          Marcar conflito na hora (auto-check)
-        </label>
-        <label className="check">
-          <input
-            type="checkbox"
-            checked={settings.autoMarkQueens}
-            onChange={(e) =>
-              persist({ ...settings, autoMarkQueens: e.target.checked })
-            }
-          />
-          Em Queens, marcar X sozinho nas casas atacadas
-        </label>
-        <label className="seed">
-          Teto de dica
-          <select
-            value={settings.hintCap}
-            onChange={(e) =>
-              persist({ ...settings, hintCap: Number(e.target.value) as HintLevel })
-            }
-          >
-            <option value={1}>1 — só destaque</option>
-            <option value={2}>2 — nome da técnica</option>
-            <option value={3}>3 — explicação</option>
-            <option value={4}>4 — aplicar o lance</option>
-            <option value={5}>5 — walkthrough</option>
-          </select>
-        </label>
+        <section className="game-settings">
+          <h3>Queens</h3>
+          <label className="check">
+            <input
+              type="checkbox"
+              checked={settings.autoCheck}
+              onChange={(e) => persist({ ...settings, autoCheck: e.target.checked })}
+            />
+            Marcar conflito na hora
+          </label>
+          <label className="check">
+            <input
+              type="checkbox"
+              checked={settings.autoMarkQueens}
+              onChange={(e) =>
+                persist({ ...settings, autoMarkQueens: e.target.checked })
+              }
+            />
+            Marcar X sozinho nas casas atacadas
+          </label>
+        </section>
+
+        {GAMES.filter((game) => game.id !== "queens").map((game) => (
+          <section key={game.id} className="game-settings is-muted">
+            <h3>{game.name}</h3>
+            <p className="lede">Ainda não há ajustes — o tabuleiro entra numa fase seguinte.</p>
+          </section>
+        ))}
+
+        <section className="game-settings">
+          <h3>Todos os jogos</h3>
+          <label className="seed">
+            Teto de dica
+            <select
+              value={settings.hintCap}
+              onChange={(e) =>
+                persist({ ...settings, hintCap: Number(e.target.value) as HintLevel })
+              }
+            >
+              <option value={1}>1 — só destaque</option>
+              <option value={2}>2 — nome da técnica</option>
+              <option value={3}>3 — explicação</option>
+              <option value={4}>4 — aplicar o lance</option>
+              <option value={5}>5 — walkthrough</option>
+            </select>
+          </label>
+        </section>
         <button className="ghost" type="submit">
           Confirmar ajustes
         </button>

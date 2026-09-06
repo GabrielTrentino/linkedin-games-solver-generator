@@ -5,25 +5,20 @@ import { autoMarkFromCrown, conflictingCells, isQueensSolved } from "../engines/
 import { finishAttempt } from "../persist/db";
 import { loadSettings } from "../persist/settings";
 import { QueensBoard } from "../ui/boards/QueensBoard";
+import { formatElapsed } from "./time";
 
 type Props = {
   payload: string;
   attemptId: string;
   startedAt: number;
+  onReplay: () => void;
 };
 
 function clone(state: QueensState): QueensState {
   return { cells: state.cells.slice() };
 }
 
-function formatElapsed(ms: number) {
-  const total = Math.max(0, Math.floor(ms / 1000));
-  const m = Math.floor(total / 60);
-  const s = total % 60;
-  return `${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
-}
-
-export function QueensSession({ payload, attemptId, startedAt }: Props) {
+export function QueensSession({ payload, attemptId, startedAt, onReplay }: Props) {
   const board = parseBoard(payload);
   const settings = loadSettings();
   const [history, setHistory] = useState<QueensState[]>(() => [emptyState(board.size)]);
@@ -134,7 +129,12 @@ export function QueensSession({ payload, attemptId, startedAt }: Props) {
         <p className="banner banner--err">{issues[0].message}</p>
       ) : null}
       {solved ? (
-        <p className="banner">Resolvido. A tentativa foi gravada no caderno.</p>
+        <div className="banner">
+          <p>Resolvido em {formatElapsed((stoppedAt ?? now) - startedAt)}. A mesma seed pode ser jogada de novo.</p>
+          <button className="ghost" type="button" onClick={onReplay}>
+            Jogar de novo
+          </button>
+        </div>
       ) : (
         <p className="lede">
           Clique cicla vazio → × → coroa. Arrastar pinta × nas casas vazias.
