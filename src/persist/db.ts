@@ -79,6 +79,18 @@ export async function startAttempt(puzzleId: string) {
   return row;
 }
 
+export async function finishAttempt(
+  id: string,
+  data: { elapsedMs: number; completed: boolean; finalState?: string },
+) {
+  await db.attempts.update(id, {
+    finishedAt: Date.now(),
+    elapsedMs: data.elapsedMs,
+    completed: data.completed,
+    finalState: data.finalState,
+  });
+}
+
 export async function listAttempts() {
   return db.attempts.orderBy("startedAt").reverse().toArray();
 }

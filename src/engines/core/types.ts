@@ -49,7 +49,7 @@ export const GAMES: Array<{
   blurb: string;
   ready: boolean;
 }> = [
-  { id: "queens", name: "Queens", blurb: "Uma coroa por linha, coluna e região.", ready: false },
+  { id: "queens", name: "Queens", blurb: "Uma coroa por linha, coluna e região.", ready: true },
   { id: "tango", name: "Tango", blurb: "Sóis e luas, três a três, sem trios.", ready: false },
   { id: "mini-sudoku", name: "Mini Sudoku", blurb: "Seis por seis, dígitos 1 a 6.", ready: false },
   { id: "zip", name: "Zip", blurb: "Um caminho que cobre a grade inteira.", ready: false },

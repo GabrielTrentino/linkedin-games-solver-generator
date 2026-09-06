@@ -13,7 +13,7 @@ Fases sequenciais. Cada fase assume a anterior está utilizável. A Fase 0 é do
 
 ## Fase 1 — Fundação
 
-**Status: em curso (shell).**
+**Status: concluída.**
 
 - Scaffold Vite + React + TypeScript + Vitest
 - Dexie com as tabelas `puzzles`, `attempts`, `solutions`
@@ -24,6 +24,8 @@ Fases sequenciais. Cada fase assume a anterior está utilizável. A Fase 0 é do
 **Pronto quando:** `npm run dev` abre o shell e os testes do contrato compilam.
 
 ## Fase 2 — Queens ponta a ponta
+
+**Status: em curso.**
 
 Primeiro jogo real: prova o contrato com UI de clique.
 

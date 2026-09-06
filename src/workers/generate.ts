@@ -1,10 +1,11 @@
-import { noopEngine } from "../engines/noop/engine";
+import { engineFor } from "../engines/registry";
 import type { GenerateRequest, GenerateResponse } from "./types";
 
 self.onmessage = (event: MessageEvent<GenerateRequest>) => {
   const { seed, difficulty, generatorVersion, game } = event.data;
   try {
-    const puzzle = noopEngine.generate(seed, difficulty, generatorVersion);
+    const engine = engineFor(game);
+    const puzzle = engine.generate(seed, difficulty, generatorVersion);
     const result: GenerateResponse = {
       puzzle: { ...puzzle, game },
     };

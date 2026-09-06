@@ -2,6 +2,7 @@ import { useState, type FormEvent } from "react";
 import { useNavigate } from "react-router-dom";
 import { DIFFICULTIES, GAMES, type Difficulty, type GameId } from "../../engines/core/types";
 import { randomSeed } from "../../engines/core/seed";
+import { engineFor } from "../../engines/registry";
 import { savePuzzle } from "../../persist/db";
 import { generatePuzzle } from "../../play/generateClient";
 import { GameGlyph } from "../../ui/GameGlyph";
@@ -24,7 +25,7 @@ export function HomePage() {
         game,
         seed: usedSeed,
         difficulty,
-        generatorVersion: "noop-0",
+        generatorVersion: engineFor(game).generatorVersion,
       });
       const id = crypto.randomUUID();
       await savePuzzle({
@@ -50,8 +51,8 @@ export function HomePage() {
         <p className="eyebrow">Mesa de trabalho</p>
         <h2>Escolha o jogo e abra uma fase</h2>
         <p className="lede">
-          Os motores ainda são um stub. A fase entra no caderno local e você já
-          pode reabrir pelo seed.
+          Queens já gera tabuleiro jogável. Os outros jogos entram no caderno como
+          stub até a fase deles.
         </p>
       </header>
 
@@ -70,7 +71,10 @@ export function HomePage() {
               onChange={() => setGame(item.id)}
             />
             <GameGlyph game={item.id} />
-            <span className="tile__name">{item.name}</span>
+            <span className="tile__name">
+              {item.name}
+              {item.ready ? "" : " · em breve"}
+            </span>
             <span className="tile__blurb">{item.blurb}</span>
           </label>
         ))}
