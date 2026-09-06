@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { patchesEngine } from "../engines/patches/engine";
 import {
   initialPatchesState,
@@ -20,7 +20,7 @@ type Props = {
 };
 
 export function PatchesSession({ payload, attemptId, startedAt, onReplay }: Props) {
-  const board = parsePatchesBoard(payload);
+  const board = useMemo(() => parsePatchesBoard(payload), [payload]);
   const [history, setHistory] = useState<PatchesState[]>(() => [initialPatchesState()]);
   const [cursor, setCursor] = useState(0);
   const [now, setNow] = useState(() => Date.now());
@@ -28,8 +28,14 @@ export function PatchesSession({ payload, attemptId, startedAt, onReplay }: Prop
   const [stoppedAt, setStoppedAt] = useState<number | null>(null);
   const [draft, setDraft] = useState<PatchRect | null>(null);
   const origin = useRef<number | null>(null);
+  const draftRef = useRef<PatchRect | null>(null);
+  const cursorRef = useRef(0);
+  const historyRef = useRef(history);
   const solvedLock = useRef(false);
   const state = history[cursor];
+  cursorRef.current = cursor;
+  historyRef.current = history;
+  draftRef.current = draft;
 
   useEffect(() => {
     if (solved) return;
@@ -53,18 +59,19 @@ export function PatchesSession({ payload, attemptId, startedAt, onReplay }: Prop
   useEffect(() => {
     function up() {
       const start = origin.current;
+      const current = draftRef.current;
       origin.current = null;
-      setDraft((current) => {
-        if (current && start != null) {
-          const used = usedCells(board, history[cursor].rects);
-          for (const at of rectCells(board, current)) used.delete(at);
-          if (rectValid(board, current, used) == null) {
-            setHistory((prev) => [...prev.slice(0, cursor + 1), { rects: [...history[cursor].rects, current] }]);
-            setCursor((c) => c + 1);
-          }
-        }
-        return null;
-      });
+      draftRef.current = null;
+      setDraft(null);
+      if (!current || start == null) return;
+
+      const c = cursorRef.current;
+      const rects = historyRef.current[c].rects;
+      const used = usedCells(board, rects);
+      if (rectValid(board, current, used) != null) return;
+
+      setHistory((prev) => [...prev.slice(0, c + 1), { rects: [...rects, current] }]);
+      setCursor(c + 1);
     }
     window.addEventListener("pointerup", up);
     window.addEventListener("pointercancel", up);
@@ -72,7 +79,7 @@ export function PatchesSession({ payload, attemptId, startedAt, onReplay }: Prop
       window.removeEventListener("pointerup", up);
       window.removeEventListener("pointercancel", up);
     };
-  }, [board, cursor, history]);
+  }, [board]);
 
   function push(next: PatchesState) {
     setHistory((prev) => [...prev.slice(0, cursor + 1), next]);
@@ -83,16 +90,23 @@ export function PatchesSession({ payload, attemptId, startedAt, onReplay }: Prop
     if (solved) return;
     const owner = state.rects.findIndex((rect) => rectCells(board, rect).includes(at));
     if (owner >= 0) {
+      origin.current = null;
+      draftRef.current = null;
+      setDraft(null);
       push({ rects: state.rects.filter((_, i) => i !== owner) });
       return;
     }
     origin.current = at;
-    setDraft(rectFromCorners(board, at, at));
+    const next = rectFromCorners(board, at, at);
+    draftRef.current = next;
+    setDraft(next);
   }
 
   function onMove(at: number) {
     if (origin.current == null || solved) return;
-    setDraft(rectFromCorners(board, origin.current, at));
+    const next = rectFromCorners(board, origin.current, at);
+    draftRef.current = next;
+    setDraft(next);
   }
 
   const issues = patchesEngine.validate(
