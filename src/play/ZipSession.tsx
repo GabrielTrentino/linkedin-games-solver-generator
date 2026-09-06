@@ -33,7 +33,6 @@ export function ZipSession({ payload, attemptId, startedAt, onReplay }: Props) {
   const cursorRef = useRef(0);
   cursorRef.current = cursor;
   const committed = history[cursor].path;
-  const state: ZipState = { path: pathView.length || drawing.current ? pathView : committed };
 
   useEffect(() => {
     setPathView(committed);

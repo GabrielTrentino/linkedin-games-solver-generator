@@ -83,6 +83,8 @@ Ainda em Queens, para não espalhar o sistema de save.
 
 ## Fase 7 — Patches
 
+**Status: em curso.**
+
 - Partição Shikaku com restrição de forma
 - UI de desenhar retângulo por pista
 - Pistas numeradas na v1; freeform só se unicidade for barata

@@ -29,7 +29,7 @@ export const zipEngine: PuzzleEngine<ZipState, ZipMove> = {
   isSolved(puzzle, state) {
     return isZipSolved(parseZipBoard(puzzle.payload), state);
   },
-  applyMove(state, move) {
+  applyMove(_state, move) {
     if (move.type === "clear") return initialZipState();
     return { path: move.path.slice() };
   },

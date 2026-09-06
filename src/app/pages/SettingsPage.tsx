@@ -115,18 +115,12 @@ export function SettingsPage() {
           <p className="lede">Arraste o caminho a partir do 1. Paredes bloqueiam a passagem.</p>
         </section>
 
-        {GAMES.filter(
-          (game) =>
-            game.id !== "queens" &&
-            game.id !== "tango" &&
-            game.id !== "mini-sudoku" &&
-            game.id !== "zip",
-        ).map((game) => (
-          <section key={game.id} className="game-settings is-muted">
-            <h3>{game.name}</h3>
-            <p className="lede">Ainda não há ajustes — o tabuleiro entra numa fase seguinte.</p>
-          </section>
-        ))}
+        <section className="game-settings">
+          <h3>Patches</h3>
+          <p className="lede">
+            Arraste o retângulo da pista. O número é a área; o símbolo trava a forma quando houver.
+          </p>
+        </section>
 
         <section className="game-settings">
           <h3>Todos os jogos</h3>

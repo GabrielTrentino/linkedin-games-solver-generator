@@ -555,6 +555,54 @@ button:disabled {
   background: #c45c26;
 }
 
+.pboard {
+  display: grid;
+  width: min(100%, 28rem);
+  border: 3px solid var(--ink);
+  background: var(--ink);
+  gap: 1px;
+  touch-action: none;
+}
+
+.pcell {
+  aspect-ratio: 1;
+  border: 0;
+  background: var(--sheet);
+  padding: 0;
+  display: grid;
+  place-items: center;
+  position: relative;
+  color: var(--ink);
+}
+
+.pcell.is-draft {
+  outline: 2px dashed var(--copper);
+  outline-offset: -2px;
+  z-index: 1;
+}
+
+.pcell.is-conflict {
+  background: #c43b3b !important;
+  color: #fff8f6;
+}
+
+.pcell__area {
+  font-family: "IBM Plex Mono", monospace;
+  font-weight: 800;
+  font-size: clamp(0.8rem, 3vw, 1.1rem);
+}
+
+.pcell__shape {
+  position: absolute;
+  right: 0.15rem;
+  bottom: 0.05rem;
+  font-size: 0.7rem;
+}
+
+.ppreview .is-clue {
+  background: #8bb89a;
+}
+
 .board-stub {
   position: relative;
   display: grid;

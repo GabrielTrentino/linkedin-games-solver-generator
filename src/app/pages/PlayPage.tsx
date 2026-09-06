@@ -2,10 +2,12 @@ import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { DIFFICULTIES, GAMES } from "../../engines/core/types";
 import { parseSudokuBoard } from "../../engines/mini-sudoku/model";
+import { parsePatchesBoard } from "../../engines/patches/model";
 import { parseBoard as parseQueens } from "../../engines/queens/model";
 import { parseTangoBoard } from "../../engines/tango/model";
 import { parseZipBoard } from "../../engines/zip/model";
 import { getPuzzle, startAttempt, type AttemptRow, type PuzzleRow } from "../../persist/db";
+import { PatchesSession } from "../../play/PatchesSession";
 import { QueensSession } from "../../play/QueensSession";
 import { SudokuSession } from "../../play/SudokuSession";
 import { TangoSession } from "../../play/TangoSession";
@@ -42,6 +44,15 @@ function isSudokuPayload(payload: string) {
 function isZipPayload(payload: string) {
   try {
     parseZipBoard(payload);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+function isPatchesPayload(payload: string) {
+  try {
+    parsePatchesBoard(payload);
     return true;
   } catch {
     return false;
@@ -89,6 +100,7 @@ export function PlayPage() {
   const tangoReady = puzzle.game === "tango" && isTangoPayload(puzzle.payload);
   const sudokuReady = puzzle.game === "mini-sudoku" && isSudokuPayload(puzzle.payload);
   const zipReady = puzzle.game === "zip" && isZipPayload(puzzle.payload);
+  const patchesReady = puzzle.game === "patches" && isPatchesPayload(puzzle.payload);
 
   async function replay() {
     if (!puzzleId) return;
@@ -104,7 +116,9 @@ export function PlayPage() {
         ? "Preencha 1 a 6"
         : zipReady
           ? "Desenhe o caminho"
-          : "Tabuleiro ainda em construção";
+          : patchesReady
+            ? "Feche os retângulos"
+            : "Tabuleiro ainda em construção";
 
   return (
     <section className="play-page">
@@ -156,6 +170,14 @@ export function PlayPage() {
           startedAt={attempt.startedAt}
           onReplay={() => void replay()}
         />
+      ) : patchesReady && attempt ? (
+        <PatchesSession
+          key={attempt.id}
+          payload={puzzle.payload}
+          attemptId={attempt.id}
+          startedAt={attempt.startedAt}
+          onReplay={() => void replay()}
+        />
       ) : (
         <>
           <div className="board-stub" role="img" aria-label="Tabuleiro placeholder">
@@ -164,7 +186,7 @@ export function PlayPage() {
             ))}
             <p className="board-stub__stamp">Este jogo entra numa fase seguinte</p>
           </div>
-          <p className="lede">Por agora Queens, Tango, Mini Sudoku e Zip estão jogáveis.</p>
+          <p className="lede">Os cinco jogos da v1 estão jogáveis.</p>
         </>
       )}
     </section>

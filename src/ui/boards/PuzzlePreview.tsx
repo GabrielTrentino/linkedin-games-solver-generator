@@ -1,3 +1,4 @@
+import { PatchesPreview } from "./PatchesPreview";
 import { QueensPreview } from "./QueensPreview";
 import { SudokuPreview } from "./SudokuPreview";
 import { TangoPreview } from "./TangoPreview";
@@ -15,5 +16,6 @@ export function PuzzlePreview({ game, payload }: Props) {
   if (game === "tango") return <TangoPreview payload={payload} />;
   if (game === "mini-sudoku") return <SudokuPreview payload={payload} />;
   if (game === "zip") return <ZipPreview payload={payload} />;
+  if (game === "patches") return <PatchesPreview payload={payload} />;
   return <GameGlyph game={game} className="glyph--sm" />;
 }
