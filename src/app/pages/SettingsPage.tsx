@@ -103,7 +103,16 @@ export function SettingsPage() {
           </p>
         </section>
 
-        {GAMES.filter((game) => game.id !== "queens" && game.id !== "tango").map((game) => (
+        <section className="game-settings">
+          <h3>Mini Sudoku</h3>
+          <p className="lede">
+            Dígitos 1 a 6. Caixas 2×3. Repetições ficam vermelhas. Casas dadas não mudam.
+          </p>
+        </section>
+
+        {GAMES.filter(
+          (game) => game.id !== "queens" && game.id !== "tango" && game.id !== "mini-sudoku",
+        ).map((game) => (
           <section key={game.id} className="game-settings is-muted">
             <h3>{game.name}</h3>
             <p className="lede">Ainda não há ajustes — o tabuleiro entra numa fase seguinte.</p>

@@ -445,6 +445,76 @@ button:disabled {
   background: #1a2744;
 }
 
+.sboard {
+  display: grid;
+  width: min(100%, 26rem);
+  border: 3px solid var(--ink);
+  background: var(--ink);
+  gap: 1px;
+}
+
+.scell {
+  aspect-ratio: 1;
+  border: 0;
+  background: var(--sheet);
+  font-family: "IBM Plex Mono", monospace;
+  font-size: clamp(1.1rem, 4vw, 1.5rem);
+  padding: 0;
+  color: var(--ink);
+}
+
+.scell.is-given {
+  font-weight: 800;
+  background: #e8eef4;
+}
+
+.scell.is-selected {
+  box-shadow: inset 0 0 0 2px var(--copper);
+}
+
+.scell.is-conflict {
+  background: #c43b3b;
+  color: #fff8f6;
+}
+
+.scell--box-e {
+  box-shadow: inset -2px 0 0 var(--ink);
+}
+
+.scell--box-s {
+  box-shadow: inset 0 -2px 0 var(--ink);
+}
+
+.scell.is-selected.scell--box-e {
+  box-shadow: inset 0 0 0 2px var(--copper), inset -2px 0 0 var(--ink);
+}
+
+.scell.is-selected.scell--box-s {
+  box-shadow: inset 0 0 0 2px var(--copper), inset 0 -2px 0 var(--ink);
+}
+
+.spreview span {
+  font-size: 0.45rem;
+  display: grid;
+  place-items: center;
+}
+
+.spreview .is-filled {
+  background: #dce8f0;
+}
+
+.digit-pad {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin-top: 0.75rem;
+}
+
+.digit-pad button.is-on {
+  background: var(--ink);
+  color: var(--sheet);
+}
+
 .board-stub {
   position: relative;
   display: grid;

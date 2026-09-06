@@ -61,6 +61,8 @@ Ainda em Queens, para não espalhar o sistema de save.
 
 ## Fase 5 — Mini Sudoku
 
+**Status: em curso.**
+
 - Motor 6×6, caixas 2×3
 - Dificuldade por técnicas, não só por buracos
 - Dicas ricas (único candidato, único na unidade, …)
