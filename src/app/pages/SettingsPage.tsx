@@ -1,12 +1,15 @@
 import { useRef, useState, type ChangeEvent, type FormEvent } from "react";
-import { GAMES } from "../../engines/core/types";
+import { GAMES, type GameId } from "../../engines/core/types";
 import type { HintLevel } from "../../engines/core/types";
-import { exportSave, importSave, type SaveFile } from "../../persist/db";
+import { deleteSave, exportSave, importSave, type SaveFile } from "../../persist/db";
 import { loadSettings, saveSettings, type AppSettings } from "../../persist/settings";
 
 export function SettingsPage() {
   const [settings, setSettings] = useState<AppSettings>(() => loadSettings());
   const [notice, setNotice] = useState<string | null>(null);
+  const [wipe, setWipe] = useState<Record<GameId, boolean>>(() =>
+    Object.fromEntries(GAMES.map((g) => [g.id, g.id === "queens"])) as Record<GameId, boolean>,
+  );
   const fileRef = useRef<HTMLInputElement>(null);
 
   function persist(next: AppSettings) {
@@ -48,6 +51,24 @@ export function SettingsPage() {
     } catch (err) {
       setNotice(err instanceof Error ? err.message : "Importação falhou.");
     }
+  }
+
+  async function onDeleteSelected() {
+    const games = GAMES.map((g) => g.id).filter((id) => wipe[id]);
+    if (games.length === 0) {
+      setNotice("Marque pelo menos um jogo.");
+      return;
+    }
+    const names = games.map((id) => GAMES.find((g) => g.id === id)?.name).join(", ");
+    if (!window.confirm(`Apagar o save de ${names}? Isso não dá para desfazer.`)) return;
+    await deleteSave(games);
+    setNotice(`Save apagado: ${names}.`);
+  }
+
+  async function onDeleteAll() {
+    if (!window.confirm("Apagar o save de todos os jogos? Isso não dá para desfazer.")) return;
+    await deleteSave("all");
+    setNotice("Save inteiro apagado.");
   }
 
   return (
@@ -128,6 +149,31 @@ export function SettingsPage() {
           accept="application/json"
           onChange={(e) => onImport(e, "merge")}
         />
+
+        <h3>Apagar save</h3>
+        <p className="lede">
+          Remove fases, tentativas e resoluções do navegador. Ajustes (auto-X, teto de dica) ficam.
+        </p>
+        <div className="wipe-games">
+          {GAMES.map((game) => (
+            <label key={game.id} className="check">
+              <input
+                type="checkbox"
+                checked={wipe[game.id]}
+                onChange={(e) => setWipe((prev) => ({ ...prev, [game.id]: e.target.checked }))}
+              />
+              {game.name}
+            </label>
+          ))}
+        </div>
+        <div className="play-tools">
+          <button type="button" className="danger" onClick={() => void onDeleteSelected()}>
+            Apagar jogos marcados
+          </button>
+          <button type="button" className="danger" onClick={() => void onDeleteAll()}>
+            Apagar tudo
+          </button>
+        </div>
       </div>
 
       {notice ? <p className="banner">{notice}</p> : null}

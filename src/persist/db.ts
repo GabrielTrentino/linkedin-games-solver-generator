@@ -109,6 +109,31 @@ export async function exportSave(): Promise<SaveFile> {
   };
 }
 
+export async function deleteSave(games: GameId[] | "all") {
+  if (games === "all") {
+    await db.transaction("rw", db.puzzles, db.attempts, db.solutions, async () => {
+      await db.puzzles.clear();
+      await db.attempts.clear();
+      await db.solutions.clear();
+    });
+    return;
+  }
+
+  const selected = new Set(games);
+  if (selected.size === 0) return;
+
+  await db.transaction("rw", db.puzzles, db.attempts, db.solutions, async () => {
+    const puzzles = await db.puzzles.toArray();
+    const ids = puzzles.filter((p) => selected.has(p.game)).map((p) => p.id);
+    if (ids.length === 0) return;
+    const attemptIds = await db.attempts.where("puzzleId").anyOf(ids).primaryKeys();
+    const solutionIds = await db.solutions.where("puzzleId").anyOf(ids).primaryKeys();
+    await db.puzzles.bulkDelete(ids);
+    await db.attempts.bulkDelete(attemptIds);
+    await db.solutions.bulkDelete(solutionIds);
+  });
+}
+
 export async function importSave(file: SaveFile, mode: "merge" | "replace") {
   if (mode === "replace") {
     await db.puzzles.clear();

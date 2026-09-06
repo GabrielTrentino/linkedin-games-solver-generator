@@ -505,8 +505,17 @@ button:disabled {
   margin: 0;
 }
 
-.game-settings.is-muted {
-  opacity: 0.72;
+.wipe-games {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem 1.2rem;
+}
+
+.danger {
+  background: color-mix(in srgb, var(--err) 12%, white);
+  color: var(--err);
+  border: 1px solid var(--err);
+  padding: 0.5rem 0.85rem;
 }
 
 .empty {
