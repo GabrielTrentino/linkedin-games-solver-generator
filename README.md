@@ -48,16 +48,20 @@ Tudo no navegador; sem backend.
 
 TypeScript cobre gerador e UI. Python deixaria os solvers fáceis, mas exigiria um front separado. Next.js não agrega: não há SSR.
 
-## Como vai rodar (quando o app existir)
+## Como rodar
 
 ```bash
 npm install
 npm run dev
 ```
 
-Abre em `http://localhost:5173` (porta padrão do Vite). Dados ficam no IndexedDB do navegador; backup via export JSON.
+Abre em `http://localhost:5173`. Dados ficam no IndexedDB do navegador; backup em Ajustes (export JSON).
 
-Ainda não há código de aplicação — esta pasta contém só o escopo.
+```bash
+npm test
+```
+
+A Fase 1 entrega o shell (mesa, caderno, marcas, ajustes) e um gerador stub. O tabuleiro jogável começa na Fase 2 (Queens).
 
 ## Fora de escopo
 

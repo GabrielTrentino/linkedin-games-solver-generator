@@ -13,6 +13,8 @@ Fases sequenciais. Cada fase assume a anterior está utilizável. A Fase 0 é do
 
 ## Fase 1 — Fundação
 
+**Status: em curso (shell).**
+
 - Scaffold Vite + React + TypeScript + Vitest
 - Dexie com as tabelas `puzzles`, `attempts`, `solutions`
 - Shell: home, histórico vazio, settings (export/import stub)
