@@ -282,6 +282,8 @@ button:disabled {
   font-weight: 700;
   font-size: 1.1rem;
   box-shadow: 4px 4px 0 var(--ink);
+  text-decoration: none;
+  display: inline-block;
 }
 
 .play:focus-visible,
@@ -518,8 +520,50 @@ button:disabled {
   padding: 0.5rem 0.85rem;
 }
 
-.empty {
-  max-width: 32rem;
+.seed-runs {
+  display: grid;
+  gap: 1.1rem;
+}
+
+.seed-runs__head {
+  display: flex;
+  gap: 1rem;
+  align-items: start;
+}
+
+.seed-runs__head .play {
+  margin-top: 0.6rem;
+}
+
+.records {
+  overflow-x: auto;
+  background: #fff;
+  border: 1px solid var(--line);
+}
+
+.records table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.98rem;
+}
+
+.records th,
+.records td {
+  text-align: left;
+  padding: 0.55rem 0.75rem;
+  border-bottom: 1px solid var(--line);
+}
+
+.records th {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--mute);
+}
+
+.records__time {
+  font-family: "IBM Plex Mono", monospace;
 }
 
 .text-link {
@@ -542,6 +586,13 @@ button:disabled {
   padding: 0.6rem;
   background: #fff;
   border: 1px solid var(--line);
+  text-decoration: none;
+  color: inherit;
+}
+
+.mark:hover,
+.mark:focus-visible {
+  border-color: var(--ink);
 }
 
 .mark__n {

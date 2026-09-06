@@ -35,7 +35,7 @@ export function PlayPage() {
         <h2>Esta fase não está no caderno</h2>
         <p>O id não existe neste navegador. Gere outra na mesa ou importe um save.</p>
         <Link className="text-link" to="/">
-          Voltar à mesa
+          Voltar às marcas
         </Link>
       </div>
     );
@@ -71,6 +71,10 @@ export function PlayPage() {
           <p className="lede">
             Seed <code>{puzzle.seed}</code> · {diff?.name} · gerador{" "}
             <code>{puzzle.generatorVersion}</code>
+            {" · "}
+            <Link className="text-link" to={`/game/${puzzle.game}`}>
+              Caderno
+            </Link>
           </p>
         </div>
       </header>

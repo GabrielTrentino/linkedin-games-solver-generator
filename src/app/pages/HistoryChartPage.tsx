@@ -1,21 +1,24 @@
 import { useEffect, useMemo, useState } from "react";
-import { Link } from "react-router-dom";
-import { GAMES, type GameId } from "../../engines/core/types";
+import { Link, useParams } from "react-router-dom";
+import { GAMES, isGameId, type GameId } from "../../engines/core/types";
 import { listAttempts, listPuzzles, type AttemptRow, type PuzzleRow } from "../../persist/db";
 import { formatElapsed, formatWhen } from "../../play/time";
+import { AttemptsTable } from "./AttemptsTable";
 
 type Point = {
   at: number;
+  startedAt: number;
   elapsedMs: number;
-  game: GameId;
   seed: string;
   puzzleId: string;
+  attemptId: string;
 };
 
 export function HistoryChartPage() {
+  const { gameId } = useParams();
+  const game: GameId | null = isGameId(gameId) ? gameId : null;
   const [puzzles, setPuzzles] = useState<PuzzleRow[]>([]);
   const [attempts, setAttempts] = useState<AttemptRow[]>([]);
-  const [game, setGame] = useState<GameId | "all">("all");
   const [hover, setHover] = useState<number | null>(null);
 
   useEffect(() => {
@@ -26,30 +29,33 @@ export function HistoryChartPage() {
   }, []);
 
   const points = useMemo(() => {
-    const byId = new Map(puzzles.map((p) => [p.id, p]));
+    if (!game) return [];
+    const byId = new Map(puzzles.filter((p) => p.game === game).map((p) => [p.id, p]));
     const rows: Point[] = [];
     for (const attempt of attempts) {
       if (!attempt.completed) continue;
       const puzzle = byId.get(attempt.puzzleId);
       if (!puzzle) continue;
-      if (game !== "all" && puzzle.game !== game) continue;
       rows.push({
         at: attempt.finishedAt ?? attempt.startedAt,
+        startedAt: attempt.startedAt,
         elapsedMs: attempt.elapsedMs,
-        game: puzzle.game,
         seed: puzzle.seed,
         puzzleId: puzzle.id,
+        attemptId: attempt.id,
       });
     }
     return rows.sort((a, b) => a.at - b.at);
   }, [attempts, game, puzzles]);
+
+  if (!game) return null;
 
   if (points.length === 0) {
     return (
       <div className="empty">
         <h2>Nenhuma resolução ainda</h2>
         <p>Quando uma fase for concluída, o tempo entra neste gráfico. A mesma seed pode aparecer várias vezes.</p>
-        <Link className="text-link" to="/history">
+        <Link className="text-link" to={`/game/${game}`}>
           Voltar à lista
         </Link>
       </div>
@@ -73,33 +79,15 @@ export function HistoryChartPage() {
 
   const line = points.map((p) => `${xOf(p.at)},${yOf(p.elapsedMs)}`).join(" ");
   const active = hover != null ? points[hover] : null;
+  const name = GAMES.find((g) => g.id === game)?.name;
 
   return (
     <div className="chart">
-      <fieldset className="pills">
-        <legend>Jogo</legend>
-        <label className={game === "all" ? "pill is-on" : "pill"}>
-          <input type="radio" name="chart-game" checked={game === "all"} onChange={() => setGame("all")} />
-          Todos
-        </label>
-        {GAMES.map((item) => (
-          <label key={item.id} className={game === item.id ? "pill is-on" : "pill"}>
-            <input
-              type="radio"
-              name="chart-game"
-              checked={game === item.id}
-              onChange={() => setGame(item.id)}
-            />
-            {item.name}
-          </label>
-        ))}
-      </fieldset>
-
       <svg
         className="chart__svg"
         viewBox={`0 0 ${width} ${height}`}
         role="img"
-        aria-label="Tempo de resolução ao longo das datas"
+        aria-label={`Tempo de resolução de ${name}`}
       >
         <line
           x1={pad.left}
@@ -140,9 +128,25 @@ export function HistoryChartPage() {
 
       <p className="lede">
         {active
-          ? `${GAMES.find((g) => g.id === active.game)?.name} · seed ${active.seed} · ${formatElapsed(active.elapsedMs)} em ${formatWhen(active.at)}`
+          ? `seed ${active.seed} · ${formatElapsed(active.elapsedMs)} em ${formatWhen(active.at)}`
           : "Cada ponto é uma resolução. Passe o mouse para ver seed e horário."}
       </p>
+
+      <h3>Registros</h3>
+      <AttemptsTable
+        gameId={game}
+        rows={[...points]
+          .slice()
+          .reverse()
+          .map((p) => ({
+            id: p.attemptId,
+            seed: p.seed,
+            puzzleId: p.puzzleId,
+            startedAt: p.startedAt,
+            elapsedMs: p.elapsedMs,
+            completed: true,
+          }))}
+      />
     </div>
   );
 }

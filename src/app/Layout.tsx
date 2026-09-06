@@ -1,13 +1,14 @@
-import { NavLink, Outlet } from "react-router-dom";
+import { NavLink, Outlet, useLocation } from "react-router-dom";
 
 const links = [
-  { to: "/", label: "Mesa" },
-  { to: "/history", label: "Caderno" },
-  { to: "/stats", label: "Marcas" },
-  { to: "/settings", label: "Ajustes" },
+  { to: "/", label: "Marcas", match: (path: string) => path === "/" || path.startsWith("/game/") },
+  { to: "/mesa", label: "Mesa", match: (path: string) => path === "/mesa" },
+  { to: "/settings", label: "Ajustes", match: (path: string) => path === "/settings" },
 ];
 
 export function Layout() {
+  const { pathname } = useLocation();
+
   return (
     <div className="shell">
       <aside className="spine">
@@ -20,8 +21,8 @@ export function Layout() {
               key={link.to}
               to={link.to}
               end={link.to === "/"}
-              className={({ isActive }) =>
-                isActive ? "spine__link is-active" : "spine__link"
+              className={() =>
+                link.match(pathname) ? "spine__link is-active" : "spine__link"
               }
             >
               {link.label}

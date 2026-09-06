@@ -65,12 +65,6 @@ export function SettingsPage() {
     setNotice(`Save apagado: ${names}.`);
   }
 
-  async function onDeleteAll() {
-    if (!window.confirm("Apagar o save de todos os jogos? Isso não dá para desfazer.")) return;
-    await deleteSave("all");
-    setNotice("Save inteiro apagado.");
-  }
-
   return (
     <section className="settings">
       <header className="mesa__head">
@@ -169,9 +163,6 @@ export function SettingsPage() {
         <div className="play-tools">
           <button type="button" className="danger" onClick={() => void onDeleteSelected()}>
             Apagar jogos marcados
-          </button>
-          <button type="button" className="danger" onClick={() => void onDeleteAll()}>
-            Apagar tudo
           </button>
         </div>
       </div>

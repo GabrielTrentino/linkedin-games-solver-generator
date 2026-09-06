@@ -56,6 +56,10 @@ export const GAMES: Array<{
   { id: "patches", name: "Patches", blurb: "Retângulos que fecham o tabuleiro.", ready: false },
 ];
 
+export function isGameId(value: string | undefined): value is GameId {
+  return GAMES.some((game) => game.id === value);
+}
+
 export const DIFFICULTIES: Array<{ id: Difficulty; name: string }> = [
   { id: "easy", name: "Fácil" },
   { id: "medium", name: "Médio" },

@@ -1,6 +1,6 @@
 import { useState, type FormEvent } from "react";
-import { useNavigate } from "react-router-dom";
-import { DIFFICULTIES, GAMES, type Difficulty, type GameId } from "../../engines/core/types";
+import { useNavigate, useParams } from "react-router-dom";
+import { DIFFICULTIES, GAMES, isGameId, type Difficulty, type GameId } from "../../engines/core/types";
 import { randomSeed } from "../../engines/core/seed";
 import { engineFor } from "../../engines/registry";
 import { savePuzzle } from "../../persist/db";
@@ -9,7 +9,9 @@ import { GameGlyph } from "../../ui/GameGlyph";
 
 export function HomePage() {
   const navigate = useNavigate();
-  const [game, setGame] = useState<GameId>("queens");
+  const { gameId } = useParams();
+  const locked = isGameId(gameId) ? gameId : null;
+  const [game, setGame] = useState<GameId>(locked ?? "queens");
   const [difficulty, setDifficulty] = useState<Difficulty>("easy");
   const [seed, setSeed] = useState("");
   const [busy, setBusy] = useState(false);
@@ -48,17 +50,27 @@ export function HomePage() {
   return (
     <form className="mesa" onSubmit={onSubmit}>
       <header className="mesa__head">
-        <p className="eyebrow">Mesa de trabalho</p>
-        <h2>Escolha o jogo e abra uma fase</h2>
+        {locked ? (
+          <>
+            <p className="eyebrow">Nova fase</p>
+            <h2>Gerar tabuleiro</h2>
+          </>
+        ) : (
+          <>
+            <p className="eyebrow">Mesa de trabalho</p>
+            <h2>Escolha o jogo e abra uma fase</h2>
+          </>
+        )}
         <p className="lede">
-          Queens já gera tabuleiro jogável. Os outros jogos entram no caderno como
-          stub até a fase deles.
+          {locked
+            ? "Seed em branco sorteia. A fase entra no caderno deste jogo."
+            : "Ou abra um jogo pelas Marcas para ver o caderno, tempos e prévias."}
         </p>
       </header>
 
       <fieldset className="tiles">
         <legend className="sr-only">Jogo</legend>
-        {GAMES.map((item) => (
+        {GAMES.filter((item) => !locked || item.id === locked).map((item) => (
           <label
             key={item.id}
             className={game === item.id ? "tile is-selected" : "tile"}
