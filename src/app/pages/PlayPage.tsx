@@ -1,10 +1,30 @@
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { DIFFICULTIES, GAMES } from "../../engines/core/types";
-import { parseBoard } from "../../engines/queens/model";
+import { parseTangoBoard } from "../../engines/tango/model";
+import { parseBoard as parseQueens } from "../../engines/queens/model";
 import { getPuzzle, startAttempt, type AttemptRow, type PuzzleRow } from "../../persist/db";
 import { QueensSession } from "../../play/QueensSession";
+import { TangoSession } from "../../play/TangoSession";
 import { GameGlyph } from "../../ui/GameGlyph";
+
+function isQueensPayload(payload: string) {
+  try {
+    parseQueens(payload);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+function isTangoPayload(payload: string) {
+  try {
+    parseTangoBoard(payload);
+    return true;
+  } catch {
+    return false;
+  }
+}
 
 export function PlayPage() {
   const { puzzleId } = useParams();
@@ -43,17 +63,8 @@ export function PlayPage() {
 
   const game = GAMES.find((g) => g.id === puzzle.game);
   const diff = DIFFICULTIES.find((d) => d.id === puzzle.difficulty);
-  const queensReady =
-    puzzle.game === "queens" &&
-    (() => {
-      try {
-        parseBoard(puzzle.payload);
-        return true;
-      } catch {
-        return false;
-      }
-    })();
-  const playable = queensReady && attempt;
+  const queensReady = puzzle.game === "queens" && isQueensPayload(puzzle.payload);
+  const tangoReady = puzzle.game === "tango" && isTangoPayload(puzzle.payload);
 
   async function replay() {
     if (!puzzleId) return;
@@ -61,13 +72,19 @@ export function PlayPage() {
     setAttempt(row);
   }
 
+  const title = queensReady
+    ? "Coloque as coroas"
+    : tangoReady
+      ? "Equilibre sóis e luas"
+      : "Tabuleiro ainda em construção";
+
   return (
     <section className="play-page">
       <header className="play-page__meta">
         <GameGlyph game={puzzle.game} className="glyph--sm" />
         <div>
           <p className="eyebrow">{game?.name}</p>
-          <h2>{playable ? "Coloque as coroas" : "Tabuleiro ainda em construção"}</h2>
+          <h2>{title}</h2>
           <p className="lede">
             Seed <code>{puzzle.seed}</code> · {diff?.name} · gerador{" "}
             <code>{puzzle.generatorVersion}</code>
@@ -79,8 +96,16 @@ export function PlayPage() {
         </div>
       </header>
 
-      {playable ? (
+      {queensReady && attempt ? (
         <QueensSession
+          key={attempt.id}
+          payload={puzzle.payload}
+          attemptId={attempt.id}
+          startedAt={attempt.startedAt}
+          onReplay={() => void replay()}
+        />
+      ) : tangoReady && attempt ? (
+        <TangoSession
           key={attempt.id}
           payload={puzzle.payload}
           attemptId={attempt.id}
@@ -95,7 +120,7 @@ export function PlayPage() {
             ))}
             <p className="board-stub__stamp">Este jogo entra numa fase seguinte</p>
           </div>
-          <p className="lede">Por agora só Queens está jogável.</p>
+          <p className="lede">Por agora Queens e Tango estão jogáveis.</p>
         </>
       )}
     </section>

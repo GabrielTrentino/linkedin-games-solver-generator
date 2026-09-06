@@ -2,8 +2,7 @@ import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { DIFFICULTIES, GAMES, isGameId } from "../../engines/core/types";
 import { getPuzzle, listAttempts, type AttemptRow, type PuzzleRow } from "../../persist/db";
-import { QueensPreview } from "../../ui/boards/QueensPreview";
-import { GameGlyph } from "../../ui/GameGlyph";
+import { PuzzlePreview } from "../../ui/boards/PuzzlePreview";
 import { AttemptsTable } from "./AttemptsTable";
 
 export function PuzzleAttemptsPage() {
@@ -48,11 +47,7 @@ export function PuzzleAttemptsPage() {
   return (
     <div className="seed-runs">
       <div className="seed-runs__head">
-        {puzzle.game === "queens" ? (
-          <QueensPreview payload={puzzle.payload} />
-        ) : (
-          <GameGlyph game={puzzle.game} className="glyph--sm" />
-        )}
+        <PuzzlePreview game={puzzle.game} payload={puzzle.payload} />
         <div>
           <h3>
             {meta?.name} · seed {puzzle.seed}

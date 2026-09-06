@@ -50,6 +50,8 @@ Ainda em Queens, para não espalhar o sistema de save.
 
 ## Fase 4 — Tango
 
+**Status: em curso.**
+
 - Motor 6×6 com `=` / `×`, equilíbrio 3/3, sem trios
 - UI de símbolos
 - Dicas níveis 1–5

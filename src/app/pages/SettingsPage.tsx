@@ -95,7 +95,15 @@ export function SettingsPage() {
           </label>
         </section>
 
-        {GAMES.filter((game) => game.id !== "queens").map((game) => (
+        <section className="game-settings">
+          <h3>Tango</h3>
+          <p className="lede">
+            Conflitos (trio, excesso, marcas =/× e linhas ou colunas repetidas) ficam vermelhos.
+            As casas dadas não mudam com o clique.
+          </p>
+        </section>
+
+        {GAMES.filter((game) => game.id !== "queens" && game.id !== "tango").map((game) => (
           <section key={game.id} className="game-settings is-muted">
             <h3>{game.name}</h3>
             <p className="lede">Ainda não há ajustes — o tabuleiro entra numa fase seguinte.</p>

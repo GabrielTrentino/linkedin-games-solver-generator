@@ -3,8 +3,7 @@ import { Link, useParams } from "react-router-dom";
 import { DIFFICULTIES, GAMES, isGameId } from "../../engines/core/types";
 import { listAttempts, listPuzzles, type AttemptRow, type PuzzleRow } from "../../persist/db";
 import { formatElapsed } from "../../play/time";
-import { QueensPreview } from "../../ui/boards/QueensPreview";
-import { GameGlyph } from "../../ui/GameGlyph";
+import { PuzzlePreview } from "../../ui/boards/PuzzlePreview";
 
 function bestTime(attempts: AttemptRow[], puzzleId: string) {
   const done = attempts.filter((a) => a.puzzleId === puzzleId && a.completed);
@@ -52,11 +51,7 @@ export function HistoryListPage() {
         return (
           <li key={puzzle.id}>
             <Link className="ledger__row" to={`/game/${game}/fase/${puzzle.id}`}>
-              {puzzle.game === "queens" ? (
-                <QueensPreview payload={puzzle.payload} />
-              ) : (
-                <GameGlyph game={puzzle.game} className="glyph--sm" />
-              )}
+              <PuzzlePreview game={puzzle.game} payload={puzzle.payload} />
               <span>
                 <strong>
                   {diff?.name} · seed {puzzle.seed}
