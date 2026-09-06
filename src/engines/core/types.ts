@@ -52,7 +52,7 @@ export const GAMES: Array<{
   { id: "queens", name: "Queens", blurb: "Uma coroa por linha, coluna e região.", ready: true },
   { id: "tango", name: "Tango", blurb: "Sóis e luas, três a três, sem trios.", ready: true },
   { id: "mini-sudoku", name: "Mini Sudoku", blurb: "Seis por seis, dígitos 1 a 6.", ready: true },
-  { id: "zip", name: "Zip", blurb: "Um caminho que cobre a grade inteira.", ready: false },
+  { id: "zip", name: "Zip", blurb: "Um caminho que cobre a grade inteira.", ready: true },
   { id: "patches", name: "Patches", blurb: "Retângulos que fecham o tabuleiro.", ready: false },
 ];
 

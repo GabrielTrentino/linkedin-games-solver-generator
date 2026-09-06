@@ -110,8 +110,17 @@ export function SettingsPage() {
           </p>
         </section>
 
+        <section className="game-settings">
+          <h3>Zip</h3>
+          <p className="lede">Arraste o caminho a partir do 1. Paredes bloqueiam a passagem.</p>
+        </section>
+
         {GAMES.filter(
-          (game) => game.id !== "queens" && game.id !== "tango" && game.id !== "mini-sudoku",
+          (game) =>
+            game.id !== "queens" &&
+            game.id !== "tango" &&
+            game.id !== "mini-sudoku" &&
+            game.id !== "zip",
         ).map((game) => (
           <section key={game.id} className="game-settings is-muted">
             <h3>{game.name}</h3>

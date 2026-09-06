@@ -4,10 +4,12 @@ import { DIFFICULTIES, GAMES } from "../../engines/core/types";
 import { parseSudokuBoard } from "../../engines/mini-sudoku/model";
 import { parseBoard as parseQueens } from "../../engines/queens/model";
 import { parseTangoBoard } from "../../engines/tango/model";
+import { parseZipBoard } from "../../engines/zip/model";
 import { getPuzzle, startAttempt, type AttemptRow, type PuzzleRow } from "../../persist/db";
 import { QueensSession } from "../../play/QueensSession";
 import { SudokuSession } from "../../play/SudokuSession";
 import { TangoSession } from "../../play/TangoSession";
+import { ZipSession } from "../../play/ZipSession";
 import { GameGlyph } from "../../ui/GameGlyph";
 
 function isQueensPayload(payload: string) {
@@ -31,6 +33,15 @@ function isTangoPayload(payload: string) {
 function isSudokuPayload(payload: string) {
   try {
     parseSudokuBoard(payload);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+function isZipPayload(payload: string) {
+  try {
+    parseZipBoard(payload);
     return true;
   } catch {
     return false;
@@ -77,6 +88,7 @@ export function PlayPage() {
   const queensReady = puzzle.game === "queens" && isQueensPayload(puzzle.payload);
   const tangoReady = puzzle.game === "tango" && isTangoPayload(puzzle.payload);
   const sudokuReady = puzzle.game === "mini-sudoku" && isSudokuPayload(puzzle.payload);
+  const zipReady = puzzle.game === "zip" && isZipPayload(puzzle.payload);
 
   async function replay() {
     if (!puzzleId) return;
@@ -90,7 +102,9 @@ export function PlayPage() {
       ? "Equilibre sóis e luas"
       : sudokuReady
         ? "Preencha 1 a 6"
-        : "Tabuleiro ainda em construção";
+        : zipReady
+          ? "Desenhe o caminho"
+          : "Tabuleiro ainda em construção";
 
   return (
     <section className="play-page">
@@ -134,6 +148,14 @@ export function PlayPage() {
           startedAt={attempt.startedAt}
           onReplay={() => void replay()}
         />
+      ) : zipReady && attempt ? (
+        <ZipSession
+          key={attempt.id}
+          payload={puzzle.payload}
+          attemptId={attempt.id}
+          startedAt={attempt.startedAt}
+          onReplay={() => void replay()}
+        />
       ) : (
         <>
           <div className="board-stub" role="img" aria-label="Tabuleiro placeholder">
@@ -142,7 +164,7 @@ export function PlayPage() {
             ))}
             <p className="board-stub__stamp">Este jogo entra numa fase seguinte</p>
           </div>
-          <p className="lede">Por agora Queens, Tango e Mini Sudoku estão jogáveis.</p>
+          <p className="lede">Por agora Queens, Tango, Mini Sudoku e Zip estão jogáveis.</p>
         </>
       )}
     </section>

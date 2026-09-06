@@ -72,6 +72,8 @@ Ainda em Queens, para não espalhar o sistema de save.
 
 ## Fase 6 — Zip
 
+**Status: em curso.**
+
 - Caminho hamiltoniano + números + paredes
 - UI de arraste e recuo
 - Dicas: pelo menos níveis 1, 4 e 5

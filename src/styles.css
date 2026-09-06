@@ -515,6 +515,46 @@ button:disabled {
   color: var(--sheet);
 }
 
+.zboard {
+  display: grid;
+  width: min(100%, 26rem);
+  border: 3px solid var(--ink);
+  background: #dbe3ec;
+  gap: 0;
+  touch-action: none;
+}
+
+.zcell {
+  aspect-ratio: 1;
+  border: 1px solid #c5d0dc;
+  background: #f7fafc;
+  font-family: "IBM Plex Mono", monospace;
+  font-weight: 800;
+  padding: 0;
+  color: var(--ink);
+}
+
+.zcell.is-path {
+  background: #f4d7b8;
+}
+
+.zcell.is-conflict {
+  background: #c43b3b;
+  color: #fff8f6;
+}
+
+.zcell--wall-e {
+  border-right: 3px solid var(--ink);
+}
+
+.zcell--wall-s {
+  border-bottom: 3px solid var(--ink);
+}
+
+.zpreview .is-num {
+  background: #c45c26;
+}
+
 .board-stub {
   position: relative;
   display: grid;
