@@ -103,6 +103,79 @@ Ainda em Queens, para não espalhar o sistema de save.
 
 **Pronto quando:** os critérios de [SCOPE.md](SCOPE.md) estão todos marcados.
 
+## Trilha paralela A — Publicação e qualidade
+
+Origem: [MELHORIAS.md](MELHORIAS.md), seções 1, 2 e 3. Pode rodar em paralelo às fases de jogo; o bloco de publicação é pré-requisito para qualquer deploy.
+
+**Publicação (GitHub Pages)**
+
+- [ ] Definir `base` no `vite.config.ts` (`/linkedin-games-solver-generator/` ou `./`)
+- [ ] Escolher roteamento compatível com Pages (`HashRouter`, ou `BrowserRouter` com `basename` + `404.html`)
+- [ ] Criar `.github/workflows/deploy.yml` (`npm ci`, `npm run build`, `actions/deploy-pages`)
+- [ ] Ativar Pages em Settings → Pages → Source: GitHub Actions
+- [ ] Validar `npm run build && npm run preview` e abrir cada rota direto pela URL
+- [ ] Verificar que o Web Worker de geração funciona com `base` em produção
+- [ ] Adicionar `homepage` e `repository` no `package.json`
+- [ ] Adicionar `<meta name="description">` e Open Graph no `index.html`
+
+**Consistência da documentação**
+
+- [ ] Atualizar o README: fase atual e lista de jogos jogáveis (hoje diz "Fase 0")
+- [ ] Sincronizar o status de cada fase acima com as entregas reais (commits já mostram Queens a Patches jogáveis)
+- [ ] README: documentar `npx vitest run` para execução única (o `npm test` fica em watch)
+- [ ] Adicionar `LICENSE`
+- [ ] Registrar em `ARCHITECTURE.md` a convenção de nomes (português e inglês no código)
+
+**Qualidade e CI**
+
+- [ ] Rodar `npm test` e `tsc -b` limpos e registrar o resultado
+- [ ] Separar a config de teste (`vitest.config.ts`) ou ajustar `tsconfig.node.json`, para o `build` não depender de tipos de teste
+- [ ] Workflow de CI com testes e build em cada PR
+- [ ] Teste de smoke do build (`dist/index.html` renderiza a rota inicial)
+- [ ] Validar schema e versão no import JSON antes de gravar no IndexedDB, com erro legível
+- [ ] Mensagem clara quando o IndexedDB estiver indisponível (modo privado, armazenamento bloqueado)
+- [ ] Botão para cancelar geração lenta
+
+## Trilha paralela B — Visual e experiência
+
+Origem: [MELHORIAS.md](MELHORIAS.md), seção 4. Começar por contraste e responsividade (atingem mais usuários).
+
+**Tema e contraste**
+
+- [ ] Tokens de modo escuro (`prefers-color-scheme: dark` e seletor manual em Ajustes)
+- [ ] Medir contraste WCAG AA de `--mute`/`--sheet` e textos em cobre; ajustar para 4.5:1
+- [ ] Conflitos em Queens e Tango com ícone ou padrão além da cor
+
+**Layout e responsividade**
+
+- [ ] Testar de 360px a 1280px; definir navegação mobile (barra inferior ou colapsável) além do breakpoint de 800px
+- [ ] Alvos de toque de pelo menos 44px nos tabuleiros, sem rolagem horizontal da grade
+- [ ] Largura máxima do conteúdo na folha principal
+
+**Hierarquia e clareza**
+
+- [ ] Faixa fixa com tempo, dicas usadas e progresso
+- [ ] Destaque de erro não invasivo; resumo na vitória (tempo, dicas, dificuldade)
+- [ ] Página inicial com cartões por jogo (último resultado, melhor tempo, preview reaproveitando `*Preview.tsx`)
+- [ ] Estados vazios com próximo passo ("Gere sua primeira fase")
+
+**Movimento e polimento**
+
+- [ ] Transições discretas ao preencher células e concluir tabuleiro, respeitando `prefers-reduced-motion`
+- [ ] `:focus-visible` em todas as células, arraste do Zip e desenho do Patches
+- [ ] Conjunto único de ícones de ação, com rótulo acessível
+
+**Identidade**
+
+- [ ] Favicon e `manifest.webmanifest` na paleta do app
+- [ ] Tela de geração mostrando a etapa atual, não só um spinner
+
+---
+
+## Ordem das trilhas paralelas
+
+A trilha A de publicação deve fechar antes de qualquer deploy público. A trilha B pode começar pela Fase 8 em diante, mas o contraste deve ser revisto antes de novos componentes de tabuleiro.
+
 ---
 
 ## Depois da v1 (não implementar agora)
