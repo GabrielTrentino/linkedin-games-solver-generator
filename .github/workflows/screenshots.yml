@@ -1,0 +1,36 @@
+name: Screenshots (temporário)
+
+on:
+  push:
+    branches:
+      - tmp/screenshots
+
+permissions:
+  contents: write
+
+jobs:
+  shoot:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run build
+      - run: npm i --no-save playwright@1.52.0 && npx playwright install --with-deps chromium
+      - name: Screenshots
+        run: |
+          npx vite preview --port 4173 --strictPort &
+          npx wait-on -t 30000 http://localhost:4173/ || sleep 5
+          node .github/shots/shoot.mjs
+      - name: Devolver imagens no branch
+        if: always()
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@users.noreply.github.com"
+          mkdir -p .github/shots/out && cp -r shots/* .github/shots/out/ || true
+          git add .github/shots/out
+          git commit -m "Screenshots [skip ci]" || exit 0
+          git push
