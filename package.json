@@ -1,13 +1,23 @@
 {
   "name": "linkedin-games-solver-generator",
   "private": true,
-  "version": "0.1.0",
+  "version": "0.2.0",
+  "description": "Gerador e jogador local de puzzles de lógica (Queens, Tango, Zip, Mini Sudoku, Patches), 100% no navegador.",
+  "homepage": "https://gabrieltrentino.github.io/linkedin-games-solver-generator/",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/GabrielTrentino/linkedin-games-solver-generator.git"
+  },
+  "license": "MIT",
   "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
     "preview": "vite preview",
-    "test": "vitest"
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc -b",
+    "check:dist": "node scripts/check-dist.mjs"
   },
   "dependencies": {
     "dexie": "^4.0.11",

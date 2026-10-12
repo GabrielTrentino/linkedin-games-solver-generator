@@ -61,6 +61,7 @@ export function PatchesBoardView({ board, rects, draft, conflicts, disabled, onD
           "pcell",
           clue ? "is-clue" : "",
           draftCells.has(at) ? "is-draft" : "",
+          tint != null && !conflicts.has(at) ? "is-tinted" : "",
           conflicts.has(at) ? "is-conflict" : "",
         ]
           .filter(Boolean)
@@ -73,7 +74,7 @@ export function PatchesBoardView({ board, rects, draft, conflicts, disabled, onD
             className={classes}
             disabled={disabled}
             style={tint != null && !conflicts.has(at) ? { background: TINTS[tint % TINTS.length] } : undefined}
-            aria-label={`Linha ${row + 1}, coluna ${col + 1}${clue ? `, pista ${clue.area}` : ""}`}
+            aria-label={`Linha ${row + 1}, coluna ${col + 1}${clue ? `, pista ${clue.area}` : ""}${conflicts.has(at) ? ", em conflito" : ""}`}
             onPointerDown={(event) => {
               event.preventDefault();
               onDown(at);

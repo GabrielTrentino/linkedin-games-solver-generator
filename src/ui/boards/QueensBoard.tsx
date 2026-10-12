@@ -1,6 +1,7 @@
 import { useRef, type KeyboardEvent, type PointerEvent } from "react";
 import type { QueensBoard as QueensBoardModel, QueensCell } from "../../engines/queens/model";
 import { REGION_COLORS, colOf, rowOf } from "../../engines/queens/model";
+import { useRovingGrid } from "./useRovingGrid";
 
 type Props = {
   board: QueensBoardModel;
@@ -37,6 +38,7 @@ export function QueensBoard({
   onMarkCommit,
 }: Props) {
   const { size, regions } = board;
+  const grid = useRovingGrid(size, size);
   const drag = useRef<{
     pointerId: number;
     origin: number;
@@ -137,15 +139,14 @@ export function QueensBoard({
             type="button"
             role="gridcell"
             className={classes}
-            style={{
-              backgroundColor: conflict
-                ? "#c43b3b"
-                : REGION_COLORS[region % REGION_COLORS.length],
-            }}
-            aria-label={`Linha ${row + 1}, coluna ${col + 1}. ${labelFor(cell, conflict)}`}
+            style={{ backgroundColor: REGION_COLORS[region % REGION_COLORS.length] }}
+            aria-label={`Linha ${row + 1}, coluna ${col + 1}, região ${region + 1}. ${labelFor(cell, conflict)}`}
+            aria-invalid={conflict || undefined}
             disabled={disabled}
-            tabIndex={at === 0 ? 0 : -1}
-            onKeyDown={(event) => onCellKey(event, at)}
+            {...grid.cellProps(at)}
+            onKeyDown={(event) => {
+              if (!grid.onKeyDown(event, at)) onCellKey(event, at);
+            }}
           >
             {cell === "crown" ? "♛" : cell === "mark" ? "×" : ""}
           </button>

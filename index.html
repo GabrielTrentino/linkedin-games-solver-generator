@@ -4,15 +4,46 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Oficina de lógica</title>
+    <meta
+      name="description"
+      content="Gere, jogue e rejogue puzzles de lógica (Queens, Tango, Zip, Mini Sudoku, Patches) direto no navegador, sem conta e sem nuvem."
+    />
+    <meta name="color-scheme" content="light dark" />
+    <meta name="theme-color" content="#1a2744" />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:locale" content="pt_BR" />
+    <meta property="og:title" content="Oficina de lógica" />
+    <meta
+      property="og:description"
+      content="Puzzles de lógica gerados por seed, jogados e salvos no seu navegador."
+    />
+    <meta name="twitter:card" content="summary" />
+
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="manifest" href="/manifest.webmanifest" />
+
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
       href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=IBM+Plex+Mono:wght@400;500&family=Syne:wght@600;700;800&display=swap"
       rel="stylesheet"
     />
+
+    <script>
+      // Aplica o tema salvo antes da primeira pintura, para não piscar.
+      try {
+        var saved = JSON.parse(localStorage.getItem("oficina-logica-settings") || "{}");
+        if (saved.theme === "light" || saved.theme === "dark") {
+          document.documentElement.dataset.theme = saved.theme;
+        }
+      } catch (e) {}
+    </script>
   </head>
   <body>
     <div id="root"></div>
+    <noscript>Este app roda no navegador e precisa de JavaScript.</noscript>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

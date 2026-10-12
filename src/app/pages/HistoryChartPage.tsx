@@ -112,14 +112,14 @@ export function HistoryChartPage() {
         <text x={width - pad.right} y={height - 12} fontSize="11" fill="currentColor" textAnchor="end">
           {formatWhen(maxX)}
         </text>
-        <polyline fill="none" stroke="#c45c26" strokeWidth="2" points={line} />
+        <polyline fill="none" style={{ stroke: "var(--copper)" }} strokeWidth="2" points={line} />
         {points.map((p, i) => (
           <circle
             key={`${p.puzzleId}-${p.at}-${i}`}
             cx={xOf(p.at)}
             cy={yOf(p.elapsedMs)}
             r={hover === i ? 6 : 4}
-            fill="#1a2744"
+            style={{ fill: "var(--ink)" }}
             onMouseEnter={() => setHover(i)}
             onMouseLeave={() => setHover(null)}
           />

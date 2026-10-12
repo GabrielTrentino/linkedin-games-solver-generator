@@ -1,5 +1,6 @@
 import type { TangoBoard, TangoCell, TangoLink } from "../../engines/tango/model";
 import { TANGO_SIZE, colOf, hLinkIndex, rowOf, vLinkIndex } from "../../engines/tango/model";
+import { useRovingGrid } from "./useRovingGrid";
 
 type Props = {
   board: TangoBoard;
@@ -20,6 +21,7 @@ function linkChar(link: TangoLink) {
 }
 
 export function TangoBoard({ board, cells, conflicts, disabled, onCycle }: Props) {
+  const grid = useRovingGrid(TANGO_SIZE, TANGO_SIZE);
   return (
     <div
       className="tboard"
@@ -50,13 +52,19 @@ export function TangoBoard({ board, cells, conflicts, disabled, onCycle }: Props
             type="button"
             role="gridcell"
             className={classes}
-            disabled={disabled || given}
-            aria-label={`Linha ${row + 1}, coluna ${col + 1}. ${given ? "Dada. " : ""}${cell === "empty" ? "Vazia" : cell === "sun" ? "Sol" : "Lua"}`}
-            onClick={() => onCycle(at)}
+            disabled={disabled}
+            aria-disabled={given || undefined}
+            aria-invalid={conflict || undefined}
+            aria-label={`Linha ${row + 1}, coluna ${col + 1}. ${given ? "Dada. " : ""}${cell === "empty" ? "Vazia" : cell === "sun" ? "Sol" : "Lua"}${h ? `. À direita: ${h === "eq" ? "igual" : "diferente"}` : ""}${v ? `. Abaixo: ${v === "eq" ? "igual" : "diferente"}` : ""}${conflict ? ". Em conflito" : ""}`}
+            {...grid.cellProps(at)}
+            onKeyDown={(event) => grid.onKeyDown(event, at)}
+            onClick={() => {
+              if (!given) onCycle(at);
+            }}
           >
             {glyph(cell)}
-            {h ? <span className="tlink tlink--e">{linkChar(h)}</span> : null}
-            {v ? <span className="tlink tlink--s">{linkChar(v)}</span> : null}
+            {h ? <span className="tlink tlink--e" aria-hidden="true">{linkChar(h)}</span> : null}
+            {v ? <span className="tlink tlink--s" aria-hidden="true">{linkChar(v)}</span> : null}
           </button>
         );
       })}

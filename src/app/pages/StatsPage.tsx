@@ -2,9 +2,16 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { GAMES, type GameId } from "../../engines/core/types";
 import { listAttempts, listPuzzles } from "../../persist/db";
+import { formatElapsed } from "../../play/time";
 import { GameGlyph } from "../../ui/GameGlyph";
 
-type Stat = { game: GameId; puzzles: number; attempts: number; wins: number };
+type Stat = {
+  game: GameId;
+  puzzles: number;
+  attempts: number;
+  wins: number;
+  bestMs: number | null;
+};
 
 export function StatsPage() {
   const [stats, setStats] = useState<Stat[]>([]);
@@ -16,11 +23,14 @@ export function StatsPage() {
           const ids = new Set(
             puzzles.filter((p) => p.game === game.id).map((p) => p.id),
           );
+          const mine = attempts.filter((a) => ids.has(a.puzzleId));
+          const wins = mine.filter((a) => a.completed);
           return {
             game: game.id,
             puzzles: ids.size,
-            attempts: attempts.filter((a) => ids.has(a.puzzleId)).length,
-            wins: attempts.filter((a) => ids.has(a.puzzleId) && a.completed).length,
+            attempts: mine.length,
+            wins: wins.length,
+            bestMs: wins.length ? Math.min(...wins.map((a) => a.elapsedMs)) : null,
           };
         }),
       );
@@ -36,7 +46,7 @@ export function StatsPage() {
         <h2>Escolha um jogo</h2>
         <p className="lede">
           {totalP === 0
-            ? "Ainda não há fases. Abra Queens e gere a primeira."
+            ? "Ainda não há fases. Escolha um jogo abaixo e gere a primeira em “Nova fase”."
             : `${totalP} fase${totalP === 1 ? "" : "s"} no caderno. Clique no jogo para ver tempos e prévias.`}
         </p>
       </header>
@@ -55,6 +65,8 @@ export function StatsPage() {
                 <span className="muted">fases</span>
                 <span className="mark__n">{row.wins}</span>
                 <span className="muted">resoluções</span>
+                <span className="mark__n">{row.bestMs == null ? "—" : formatElapsed(row.bestMs)}</span>
+                <span className="muted">melhor</span>
               </Link>
             </li>
           );
