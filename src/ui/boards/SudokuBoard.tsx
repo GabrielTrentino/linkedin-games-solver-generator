@@ -1,4 +1,5 @@
 import { SUDOKU_BOX_H, SUDOKU_BOX_W, SUDOKU_SIZE, colOf, rowOf, type SudokuBoard, type SudokuCell } from "../../engines/mini-sudoku/model";
+import { useRovingGrid } from "./useRovingGrid";
 
 type Props = {
   board: SudokuBoard;
@@ -7,9 +8,12 @@ type Props = {
   selected: number | null;
   disabled?: boolean;
   onCell: (at: number) => void;
+  /** Foco por teclado seleciona a casa sem escrever, para digitar 1–6 em seguida. */
+  onSelect?: (at: number) => void;
 };
 
-export function SudokuBoardView({ board, cells, conflicts, selected, disabled, onCell }: Props) {
+export function SudokuBoardView({ board, cells, conflicts, selected, disabled, onCell, onSelect }: Props) {
+  const grid = useRovingGrid(SUDOKU_SIZE, SUDOKU_SIZE);
   return (
     <div
       className="sboard"
@@ -39,9 +43,20 @@ export function SudokuBoardView({ board, cells, conflicts, selected, disabled, o
             type="button"
             role="gridcell"
             className={classes}
-            disabled={disabled || given}
-            aria-label={`Linha ${row + 1}, coluna ${col + 1}. ${given ? "Dada. " : ""}${cell || "Vazia"}`}
-            onClick={() => onCell(at)}
+            disabled={disabled}
+            aria-disabled={given || undefined}
+            aria-invalid={conflicts.has(at) || undefined}
+            aria-selected={selected === at}
+            aria-label={`Linha ${row + 1}, coluna ${col + 1}. ${given ? "Dada. " : ""}${cell || "Vazia"}${conflicts.has(at) ? ". Repetido" : ""}`}
+            {...grid.cellProps(at)}
+            onFocus={() => {
+              grid.activate(at);
+              if (!given) onSelect?.(at);
+            }}
+            onKeyDown={(event) => grid.onKeyDown(event, at)}
+            onClick={() => {
+              if (!given) onCell(at);
+            }}
           >
             {cell || ""}
           </button>

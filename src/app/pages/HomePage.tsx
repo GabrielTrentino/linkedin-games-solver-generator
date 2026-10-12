@@ -1,10 +1,10 @@
-import { useState, type FormEvent } from "react";
+import { useEffect, useRef, useState, type FormEvent } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { DIFFICULTIES, GAMES, isGameId, type Difficulty, type GameId } from "../../engines/core/types";
 import { randomSeed } from "../../engines/core/seed";
 import { engineFor } from "../../engines/registry";
 import { savePuzzle } from "../../persist/db";
-import { generatePuzzle } from "../../play/generateClient";
+import { GenerationCancelled, generatePuzzle, type GenerationJob } from "../../play/generateClient";
 import { GameGlyph } from "../../ui/GameGlyph";
 
 export function HomePage() {
@@ -16,19 +16,35 @@ export function HomePage() {
   const [seed, setSeed] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [startedAt, setStartedAt] = useState<number | null>(null);
+  const [now, setNow] = useState(() => Date.now());
+  const job = useRef<GenerationJob | null>(null);
+
+  useEffect(() => {
+    if (!busy) return;
+    const id = window.setInterval(() => setNow(Date.now()), 250);
+    return () => window.clearInterval(id);
+  }, [busy]);
+
+  // Sair da página no meio da geração encerra o worker.
+  useEffect(() => () => job.current?.cancel(), []);
 
   async function onSubmit(event: FormEvent) {
     event.preventDefault();
+    if (busy) return;
     setBusy(true);
     setError(null);
+    setStartedAt(Date.now());
+    setNow(Date.now());
     const usedSeed = seed.trim() || randomSeed();
     try {
-      const puzzle = await generatePuzzle({
+      job.current = generatePuzzle({
         game,
         seed: usedSeed,
         difficulty,
         generatorVersion: engineFor(game).generatorVersion,
       });
+      const puzzle = await job.current.promise;
       const id = crypto.randomUUID();
       await savePuzzle({
         id,
@@ -41,11 +57,25 @@ export function HomePage() {
       });
       navigate(`/play/${id}`);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Não deu para gerar a fase.");
+      if (err instanceof GenerationCancelled) {
+        setError(null);
+      } else {
+        setError(
+          err instanceof Error
+            ? `Não deu para gerar a fase: ${err.message}`
+            : "Não deu para gerar a fase. Tente outra seed ou outra dificuldade.",
+        );
+      }
     } finally {
+      job.current = null;
       setBusy(false);
+      setStartedAt(null);
     }
   }
+
+  const waited = startedAt == null ? 0 : Math.max(0, Math.floor((now - startedAt) / 1000));
+  const gameName = GAMES.find((g) => g.id === game)?.name ?? game;
+  const diffName = DIFFICULTIES.find((d) => d.id === difficulty)?.name.toLowerCase() ?? difficulty;
 
   return (
     <form className="mesa" onSubmit={onSubmit}>
@@ -123,9 +153,24 @@ export function HomePage() {
 
       {error ? <p className="banner banner--err">{error}</p> : null}
 
-      <button className="play" type="submit" disabled={busy}>
-        {busy ? "Gerando…" : "Abrir fase"}
-      </button>
+      {busy ? (
+        <div className="generating" role="status" aria-live="polite">
+          <span className="generating__bar" aria-hidden="true" />
+          <p>
+            Gerando {gameName} {diffName} e conferindo se a solução é única… <code>{waited}s</code>
+          </p>
+          {waited >= 4 ? (
+            <p className="muted">Fases difíceis podem levar mais tempo. Dá para cancelar e tentar outra seed.</p>
+          ) : null}
+          <button className="ghost" type="button" onClick={() => job.current?.cancel()}>
+            Cancelar
+          </button>
+        </div>
+      ) : (
+        <button className="play" type="submit">
+          Abrir fase
+        </button>
+      )}
     </form>
   );
 }

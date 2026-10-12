@@ -1,12 +1,15 @@
 import { useRef, useState, type ChangeEvent, type FormEvent } from "react";
 import { GAMES, type GameId } from "../../engines/core/types";
 import type { HintLevel } from "../../engines/core/types";
-import { deleteSave, exportSave, importSave, type SaveFile } from "../../persist/db";
-import { loadSettings, saveSettings, type AppSettings } from "../../persist/settings";
+import { deleteSave, exportSave, importSave } from "../../persist/db";
+import { parseSaveFile } from "../../persist/saveFile";
+import { loadSettings, saveSettings, type AppSettings, type ThemeChoice } from "../../persist/settings";
+import { applyTheme } from "../theme";
 
 export function SettingsPage() {
   const [settings, setSettings] = useState<AppSettings>(() => loadSettings());
   const [notice, setNotice] = useState<string | null>(null);
+  const [importErrors, setImportErrors] = useState<string[]>([]);
   const [wipe, setWipe] = useState<Record<GameId, boolean>>(() =>
     Object.fromEntries(GAMES.map((g) => [g.id, g.id === "queens"])) as Record<GameId, boolean>,
   );
@@ -14,13 +17,23 @@ export function SettingsPage() {
 
   function persist(next: AppSettings) {
     setSettings(next);
-    saveSettings(next);
+    if (!saveSettings(next)) {
+      setNotice("O navegador bloqueou o armazenamento: os ajustes valem só até fechar a aba.");
+    }
+  }
+
+  function onTheme(theme: ThemeChoice) {
+    applyTheme(theme);
+    persist({ ...settings, theme });
   }
 
   function onSubmit(event: FormEvent) {
     event.preventDefault();
-    saveSettings(settings);
-    setNotice("Ajustes gravados neste navegador.");
+    setNotice(
+      saveSettings(settings)
+        ? "Ajustes gravados neste navegador."
+        : "O navegador bloqueou o armazenamento: os ajustes valem só até fechar a aba.",
+    );
   }
 
   async function onExport() {
@@ -34,6 +47,7 @@ export function SettingsPage() {
     a.download = "linkedin-games-save.json";
     a.click();
     URL.revokeObjectURL(url);
+    setImportErrors([]);
     setNotice("Arquivo de save baixado.");
   }
 
@@ -41,27 +55,37 @@ export function SettingsPage() {
     const file = event.target.files?.[0];
     event.target.value = "";
     if (!file) return;
+    setImportErrors([]);
+    const result = parseSaveFile(await file.text());
+    if (!result.ok) {
+      setNotice(`Nada foi importado de ${file.name}. O arquivo não passou na validação:`);
+      setImportErrors(result.errors);
+      return;
+    }
     try {
-      const parsed = JSON.parse(await file.text()) as SaveFile;
-      if (!parsed.meta || !Array.isArray(parsed.puzzles)) {
-        throw new Error("JSON sem o formato do save.");
-      }
-      await importSave(parsed, mode);
-      setNotice(mode === "merge" ? "Save mesclado." : "Save substituído.");
+      await importSave(result.save, mode);
+      const n = result.save.puzzles.length;
+      setNotice(
+        `${mode === "merge" ? "Save mesclado" : "Save substituído"}: ${n} fase${n === 1 ? "" : "s"} no arquivo.`,
+      );
     } catch (err) {
-      setNotice(err instanceof Error ? err.message : "Importação falhou.");
+      setNotice(
+        `Importação falhou e nada foi alterado${err instanceof Error ? ` (${err.message})` : ""}.`,
+      );
     }
   }
 
   async function onDeleteSelected() {
     const games = GAMES.map((g) => g.id).filter((id) => wipe[id]);
     if (games.length === 0) {
+      setImportErrors([]);
       setNotice("Marque pelo menos um jogo.");
       return;
     }
     const names = games.map((id) => GAMES.find((g) => g.id === id)?.name).join(", ");
     if (!window.confirm(`Apagar o save de ${names}? Isso não dá para desfazer.`)) return;
     await deleteSave(games);
+    setImportErrors([]);
     setNotice(`Save apagado: ${names}.`);
   }
 
@@ -73,6 +97,31 @@ export function SettingsPage() {
       </header>
 
       <form className="stack" onSubmit={onSubmit}>
+        <section className="game-settings">
+          <h3>Aparência</h3>
+          <fieldset className="pills">
+            <legend>Tema</legend>
+            {(
+              [
+                ["auto", "Do sistema"],
+                ["light", "Claro"],
+                ["dark", "Escuro"],
+              ] as Array<[ThemeChoice, string]>
+            ).map(([id, label]) => (
+              <label key={id} className={settings.theme === id ? "pill is-on" : "pill"}>
+                <input
+                  type="radio"
+                  name="theme"
+                  value={id}
+                  checked={settings.theme === id}
+                  onChange={() => onTheme(id)}
+                />
+                {label}
+              </label>
+            ))}
+          </fieldset>
+        </section>
+
         <section className="game-settings">
           <h3>Queens</h3>
           <label className="check">
@@ -187,7 +236,18 @@ export function SettingsPage() {
         </div>
       </div>
 
-      {notice ? <p className="banner">{notice}</p> : null}
+      {notice ? (
+        <div className={importErrors.length > 0 ? "banner banner--err" : "banner"} role="status">
+          <p>{notice}</p>
+          {importErrors.length > 0 ? (
+            <ul className="banner__list">
+              {importErrors.map((line) => (
+                <li key={line}>{line}</li>
+              ))}
+            </ul>
+          ) : null}
+        </div>
+      ) : null}
     </section>
   );
 }

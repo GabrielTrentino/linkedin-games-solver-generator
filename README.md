@@ -1,67 +1,83 @@
-# LinkedIn Games — gerador e jogador local
+# Oficina de lógica — gerador e jogador local
 
-App web **100% local** para gerar, jogar, pedir dicas, salvar e rejogar puzzles no estilo dos jogos de lógica do LinkedIn.
+App web **100% no navegador** para gerar, jogar, salvar e rejogar puzzles no estilo dos jogos de lógica do LinkedIn.
 
 Não copia tabuleiros oficiais nem usa marca ou assets da plataforma. É uma implementação independente das mesmas famílias de regras, pensada para treino ilimitado, replay da mesma fase e acompanhamento de evolução.
 
-Documentação desta fase (escopo, sem código de app ainda):
+**Jogar:** <https://gabrieltrentino.github.io/linkedin-games-solver-generator/> (publicado pelo GitHub Pages a cada push na `main`).
 
-- [Escopo da v1](docs/SCOPE.md)
-- [Regras dos jogos](docs/GAMES.md)
-- [Arquitetura prevista](docs/ARCHITECTURE.md)
-- [Roadmap em fases](docs/ROADMAP.md)
+## Jogos
 
-## O que o produto faz
+| Jogo | Regra | Estado |
+| --- | --- | --- |
+| Queens | Uma coroa por linha, coluna e região; coroas não se tocam | Jogável |
+| Tango | Grade 6×6 de sóis e luas, com marcas `=` e `×` | Jogável |
+| Mini Sudoku | Sudoku 6×6 (dígitos 1–6, caixas 2×3) | Jogável |
+| Zip | Um caminho que liga os números em ordem e preenche todas as células | Jogável |
+| Patches | Particionar a grade em retângulos a partir de pistas de área e forma | Jogável |
 
-- Gerar fases novas com dificuldade configurável
-- Rejogar a **mesma** fase (seed determinístico)
-- Pedir dicas em vários níveis de verbosidade
-- Salvar a resolução (passos) e o histórico de fases
-- Acompanhar evolução (tempos, dicas usadas, conclusão)
-- Reabrir qualquer fase salva
+As dicas ainda não estão implementadas (o botão aparece desabilitado). Ver [roadmap](docs/ROADMAP.md).
 
-## Jogos da v1
+**Fora da v1:** Pinpoint, Crossclimb e Wend (palavra/trivia).
 
-Só lógica nesta versão:
+## O que já faz
 
-| Jogo | Tipo |
-| --- | --- |
-| Queens | Uma coroa por linha, coluna e região; coroas não se tocam |
-| Tango | Grade 6×6 de sóis e luas, com marcas `=` e `×` |
-| Zip | Um caminho que liga os números em ordem e preenche todas as células |
-| Mini Sudoku | Sudoku 6×6 (dígitos 1–6, caixas 2×3) |
-| Patches | Particionar a grade em retângulos a partir de pistas de área e forma |
+- Gera fases com dificuldade fácil, média ou difícil, numa thread separada (Web Worker), com opção de cancelar
+- Reproduz a **mesma** fase a partir da seed
+- Cronômetro, desfazer, limpar e detecção de conclusão
+- Caderno por jogo: lista de fases, execuções por seed e gráfico de tempos
+- Exporta e importa o progresso em JSON (com validação antes de gravar)
+- Tema claro, escuro ou do sistema
+- Navegação por teclado (setas) em Queens, Tango e Mini Sudoku
 
-**Fora da v1:** Pinpoint, Crossclimb e Wend (palavra/trivia). Ver [roadmap](docs/ROADMAP.md).
+## Onde ficam os dados
 
-## Stack
+Tudo fica no **IndexedDB do navegador de quem joga**. Não há conta, servidor nem sincronização entre aparelhos. Para levar o progresso para outro navegador, use **Ajustes → Exportar save** e importe o arquivo no outro lado.
 
-Tudo no navegador; sem backend.
+Em janela anônima (ou com armazenamento bloqueado), o app avisa que nada será salvo.
 
-- **TypeScript** — UI e motores de puzzle na mesma linguagem
-- **Vite + React** — app local e grades interativas
-- **Motores puros** (sem React) em `src/engines/<jogo>/`, testáveis à parte
-- **Web Worker** — geração sem travar a interface
-- **IndexedDB (Dexie)** — fases, tentativas e soluções no próprio browser
-- **Export/import JSON** — backup do progresso
-- **Vitest** — unicidade da solução, seeds e regras
+## Rodar localmente
 
-TypeScript cobre gerador e UI. Python deixaria os solvers fáceis, mas exigiria um front separado. Next.js não agrega: não há SSR.
-
-## Como rodar
+Requer Node 20 ou superior.
 
 ```bash
 npm install
-npm run dev
+npm run dev        # http://localhost:5173
 ```
 
-Abre em `http://localhost:5173`. Dados ficam no IndexedDB do navegador; backup em Ajustes (export JSON).
+| Comando | O que faz |
+| --- | --- |
+| `npm test` | Roda os testes uma vez (Vitest) |
+| `npm run test:watch` | Testes em modo watch |
+| `npm run typecheck` | Checagem de tipos (`tsc -b`) |
+| `npm run build` | Checagem de tipos + build de produção em `dist/` |
+| `npm run preview` | Serve o `dist/` localmente |
+| `npm run check:dist` | Smoke do build: caminhos relativos e worker emitido |
 
-```bash
-npm test
-```
+## Publicação (GitHub Pages)
 
-A Fase 1 entrega o shell (mesa, caderno, marcas, ajustes) e um gerador stub. O tabuleiro jogável começa na Fase 2 (Queens).
+- `vite.config.ts` usa `base: "./"`, então o build funciona em qualquer subpasta.
+- As rotas usam `HashRouter` (`/#/mesa`), então recarregar ou abrir um link direto nunca dá 404.
+- `.github/workflows/deploy.yml` roda testes, build e smoke, e publica `dist/` a cada push na `main`.
+- `.github/workflows/ci.yml` roda as mesmas checagens em pull requests e em outros branches.
+
+**Primeira vez:** em *Settings → Pages*, escolha *Source: GitHub Actions*. Depois disso, cada push na `main` publica sozinho.
+
+## Stack
+
+- **TypeScript**, **Vite + React**, **React Router** (hash)
+- **Motores puros** (sem React) em `src/engines/<jogo>/`, testáveis à parte
+- **Web Worker** para geração
+- **IndexedDB (Dexie)** para fases, tentativas e soluções
+- **Vitest** para unicidade da solução, seeds, regras e validação do save
+
+## Documentação
+
+- [Escopo da v1](docs/SCOPE.md)
+- [Regras dos jogos](docs/GAMES.md)
+- [Arquitetura](docs/ARCHITECTURE.md)
+- [Roadmap](docs/ROADMAP.md)
+- [Melhorias (levantamento e status)](docs/MELHORIAS.md)
 
 ## Fora de escopo
 
@@ -71,6 +87,6 @@ A Fase 1 entrega o shell (mesa, caderno, marcas, ajustes) e um gerador stub. O t
 - Monetização
 - Jogos de palavra na v1
 
-## Fase atual
+## Licença
 
-**Fase 0 — Documentação.** Próximo passo: [Fase 1 — Fundação](docs/ROADMAP.md).
+[MIT](LICENSE).

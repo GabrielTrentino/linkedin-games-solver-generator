@@ -1,41 +1,8 @@
 import Dexie, { type Table } from "dexie";
-import type { Difficulty, GameId, HintLevel } from "../engines/core/types";
+import type { GameId } from "../engines/core/types";
+import type { AttemptRow, PuzzleRow, SaveFile, SolutionRow } from "./saveFile";
 
-export type PuzzleRow = {
-  id: string;
-  game: GameId;
-  seed: string;
-  difficulty: Difficulty;
-  generatorVersion: string;
-  payload: string;
-  createdAt: number;
-};
-
-export type AttemptRow = {
-  id: string;
-  puzzleId: string;
-  startedAt: number;
-  finishedAt?: number;
-  elapsedMs: number;
-  hintsUsed: Partial<Record<HintLevel, number>>;
-  completed: boolean;
-  finalState?: string;
-};
-
-export type SolutionRow = {
-  id: string;
-  puzzleId: string;
-  createdAt: number;
-  source: "player" | "walkthrough";
-  steps: unknown[];
-};
-
-export type SaveFile = {
-  meta: { schemaVersion: 1; exportedAt: number };
-  puzzles: PuzzleRow[];
-  attempts: AttemptRow[];
-  solutions: SolutionRow[];
-};
+export type { AttemptRow, PuzzleRow, SaveFile, SolutionRow } from "./saveFile";
 
 class PuzzleDb extends Dexie {
   puzzles!: Table<PuzzleRow, string>;
@@ -135,23 +102,51 @@ export async function deleteSave(games: GameId[] | "all") {
 }
 
 export async function importSave(file: SaveFile, mode: "merge" | "replace") {
-  if (mode === "replace") {
-    await db.puzzles.clear();
-    await db.attempts.clear();
-    await db.solutions.clear();
-  }
+  // Tudo numa transação: se uma gravação falhar, nada é apagado nem gravado
+  // pela metade (antes o modo "replace" limpava as tabelas fora da transação).
   await db.transaction("rw", db.puzzles, db.attempts, db.solutions, async () => {
-    for (const row of file.puzzles) {
-      const exists = await db.puzzles.get(row.id);
-      if (!exists || mode === "replace") await db.puzzles.put(row);
+    if (mode === "replace") {
+      await db.puzzles.clear();
+      await db.attempts.clear();
+      await db.solutions.clear();
+      await db.puzzles.bulkPut(file.puzzles);
+      await db.attempts.bulkPut(file.attempts);
+      await db.solutions.bulkPut(file.solutions);
+      return;
     }
-    for (const row of file.attempts) {
-      const exists = await db.attempts.get(row.id);
-      if (!exists || mode === "replace") await db.attempts.put(row);
-    }
-    for (const row of file.solutions) {
-      const exists = await db.solutions.get(row.id);
-      if (!exists || mode === "replace") await db.solutions.put(row);
-    }
+    const [puzzleKeys, attemptKeys, solutionKeys] = await Promise.all([
+      db.puzzles.toCollection().primaryKeys(),
+      db.attempts.toCollection().primaryKeys(),
+      db.solutions.toCollection().primaryKeys(),
+    ]);
+    const has = (keys: string[]) => {
+      const set = new Set(keys);
+      return (row: { id: string }) => !set.has(row.id);
+    };
+    await db.puzzles.bulkPut(file.puzzles.filter(has(puzzleKeys)));
+    await db.attempts.bulkPut(file.attempts.filter(has(attemptKeys)));
+    await db.solutions.bulkPut(file.solutions.filter(has(solutionKeys)));
   });
+}
+
+export type StorageStatus = { ok: true } | { ok: false; reason: string };
+
+/**
+ * Abre o IndexedDB uma vez para saber se o navegador permite gravar.
+ * Falha em modo privado de alguns navegadores e com armazenamento bloqueado.
+ */
+export async function checkStorage(): Promise<StorageStatus> {
+  if (typeof indexedDB === "undefined") {
+    return { ok: false, reason: "Este navegador não oferece IndexedDB." };
+  }
+  try {
+    await db.open();
+    return { ok: true };
+  } catch (error) {
+    const detail = error instanceof Error && error.message ? ` (${error.message})` : "";
+    return {
+      ok: false,
+      reason: `O navegador bloqueou o armazenamento local${detail}.`,
+    };
+  }
 }

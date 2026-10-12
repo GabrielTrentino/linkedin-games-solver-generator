@@ -106,6 +106,9 @@ export function SudokuSession({ payload, attemptId, startedAt, onReplay }: Props
         selected={selected}
         disabled={solved}
         onCell={onCell}
+        onSelect={(at) => {
+          if (!solved) setSelected(at);
+        }}
       />
       <div className="digit-pad" role="toolbar" aria-label="Dígitos">
         {([1, 2, 3, 4, 5, 6, 0] as SudokuCell[]).map((d) => (

@@ -62,7 +62,7 @@ export function ZipBoardView({ board, path, conflicts, disabled, onHover, onDown
             data-zip-at={at}
             className={classes}
             disabled={disabled}
-            aria-label={`Linha ${row + 1}, coluna ${col + 1}${num ? `, número ${num}` : ""}`}
+            aria-label={`Linha ${row + 1}, coluna ${col + 1}${num ? `, número ${num}` : ""}${on ? `, passo ${(order.get(at) ?? 0) + 1} do caminho` : ""}${conflicts.has(at) ? ", em conflito" : ""}`}
             onPointerDown={(event) => {
               event.preventDefault();
               onDown(at);
