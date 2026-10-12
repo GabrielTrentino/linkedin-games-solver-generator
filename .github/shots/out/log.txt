@@ -1,0 +1,32 @@
+shot light-01-marcas
+shot light-02-mesa
+shot light-03-queens-conflito
+shot light-04-tango
+shot light-05-sudoku
+shot light-06-zip
+shot light-07-patches
+shot light-08-ajustes
+shot light-09-marcas-com-dados
+shot dark-01-marcas
+shot dark-02-mesa
+shot dark-03-queens-conflito
+shot dark-04-tango
+shot dark-05-sudoku
+shot dark-06-zip
+shot dark-07-patches
+shot dark-08-ajustes
+shot dark-09-marcas-com-dados
+keyboard focus after →→↓: Linha 2, coluna 3, região 1. Vazia
+shot light-10-queens-teclado
+sudoku focus after →x4: Linha 1, coluna 5. Vazia
+shot light-11-sudoku-teclado
+shot light-12-import-invalido
+deep link url: http://localhost:4173/#/game/queens/tempos title: Queens
+shot mobile-light-01-marcas
+shot mobile-light-02-queens
+shot mobile-light-03-sudoku
+mobile light scrollWidth: 360
+shot mobile-dark-01-marcas
+shot mobile-dark-02-queens
+shot mobile-dark-03-sudoku
+mobile dark scrollWidth: 360
