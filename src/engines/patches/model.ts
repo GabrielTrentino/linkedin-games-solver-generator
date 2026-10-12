@@ -77,3 +77,15 @@ export function shapeOk(shape: PatchShape, h: number, w: number) {
 export function clueAtCell(board: PatchesBoard, at: number) {
   return board.clues.find((c) => c.at === at) ?? null;
 }
+
+/** Um retângulo cobre a casa (row, col)? */
+export function rectHasCell(board: PatchesBoard, rect: PatchRect, at: number): boolean {
+  const row = patchesRow(board, at);
+  const col = patchesCol(board, at);
+  return row >= rect.row && row < rect.row + rect.h && col >= rect.col && col < rect.col + rect.w;
+}
+
+/** Índice da pista dentro do retângulo, ou -1 se ele não cobre nenhuma. */
+export function clueIndexIn(board: PatchesBoard, rect: PatchRect): number {
+  return board.clues.findIndex((clue) => rectHasCell(board, rect, clue.at));
+}

@@ -1,12 +1,19 @@
 import { useEffect, useState } from "react";
 import { NavLink, Outlet, useLocation } from "react-router-dom";
 import { checkStorage, type StorageStatus } from "../persist/db";
+import { GAMES } from "../engines/core/types";
 
 const links = [
-  { to: "/", label: "Marcas", match: (path: string) => path === "/" || path.startsWith("/game/") },
   { to: "/mesa", label: "Mesa", match: (path: string) => path === "/mesa" },
   { to: "/settings", label: "Ajustes", match: (path: string) => path === "/settings" },
 ];
+
+const gameLinks = GAMES.map((game) => ({
+  id: game.id,
+  name: game.name,
+  to: `/game/${game.id}`,
+  match: (path: string) => path === `/game/${game.id}` || path.startsWith(`/game/${game.id}/`),
+}));
 
 export function Layout() {
   const { pathname } = useLocation();
@@ -37,13 +44,36 @@ export function Layout() {
         <h1 className="spine__title">Lógica local</h1>
         <p className="spine__note">Cinco jogos. Sem dia. Sem nuvem.</p>
         <nav className="spine__nav" aria-label="Principal">
+          <NavLink
+            to="/"
+            end
+            aria-current={pathname === "/" ? "page" : undefined}
+            className={() => (pathname === "/" ? "spine__link is-active" : "spine__link")}
+          >
+            Jogos
+          </NavLink>
+          <ul className="spine__sub" aria-label="Jogos">
+            {gameLinks.map((game) => {
+              const active = game.match(pathname);
+              return (
+                <li key={game.id}>
+                  <NavLink
+                    to={game.to}
+                    aria-current={active ? "page" : undefined}
+                    className={() => (active ? "spine__sublink is-active" : "spine__sublink")}
+                  >
+                    {game.name}
+                  </NavLink>
+                </li>
+              );
+            })}
+          </ul>
           {links.map((link) => {
             const active = link.match(pathname);
             return (
               <NavLink
                 key={link.to}
                 to={link.to}
-                end={link.to === "/"}
                 aria-current={active ? "page" : undefined}
                 className={() => (active ? "spine__link is-active" : "spine__link")}
               >
