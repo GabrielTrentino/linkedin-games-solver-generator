@@ -61,12 +61,18 @@ export function StatsPage() {
                   {game?.name}
                   {game?.ready ? "" : " · em breve"}
                 </strong>
-                <span className="mark__n">{row.puzzles}</span>
-                <span className="muted">fases</span>
-                <span className="mark__n">{row.wins}</span>
-                <span className="muted">resoluções</span>
-                <span className="mark__n">{row.bestMs == null ? "—" : formatElapsed(row.bestMs)}</span>
-                <span className="muted">melhor</span>
+                <span className="mark__stats">
+                  <span>
+                    <span className="mark__n">{row.puzzles}</span> fase{row.puzzles === 1 ? "" : "s"}
+                  </span>
+                  <span>
+                    <span className="mark__n">{row.wins}</span> resoluç{row.wins === 1 ? "ão" : "ões"}
+                  </span>
+                  <span>
+                    melhor{" "}
+                    <span className="mark__n">{row.bestMs == null ? "—" : formatElapsed(row.bestMs)}</span>
+                  </span>
+                </span>
               </Link>
             </li>
           );

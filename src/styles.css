@@ -950,7 +950,7 @@ button:disabled {
 
 .mark {
   display: grid;
-  grid-template-columns: 44px 1fr repeat(6, auto);
+  grid-template-columns: 44px 1fr auto;
   gap: 0.6rem;
   align-items: center;
   padding: 0.6rem;
@@ -965,9 +965,19 @@ button:disabled {
   border-color: var(--ink);
 }
 
+.mark__stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.2rem 1rem;
+  justify-content: end;
+  color: var(--mute);
+  font-size: 0.95rem;
+}
+
 .mark__n {
   font-family: "IBM Plex Mono", monospace;
-  font-size: 1.2rem;
+  font-size: 1.15rem;
+  color: var(--ink);
 }
 
 .stack {
@@ -1205,6 +1215,11 @@ button:disabled {
 
   .mark {
     grid-template-columns: 44px 1fr;
+  }
+
+  .mark__stats {
+    grid-column: 2;
+    justify-content: start;
   }
 }
 
