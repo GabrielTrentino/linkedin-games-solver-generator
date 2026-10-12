@@ -44,10 +44,11 @@ try {
     await shot(page, `${scheme}-02-mesa`);
 
     await generate(page, "Queens", ".qboard");
+    // Coroa na casa 0; o auto-X marca a vizinha; um clique nela vira coroa → conflito.
     await clickCell(page, ".qcell", 0);
     await clickCell(page, ".qcell", 0);
     await clickCell(page, ".qcell", 1);
-    await clickCell(page, ".qcell", 1);
+    log.push(`${scheme} queens conflitos: ${await page.locator(".qcell.is-conflict").count()}`);
     await shot(page, `${scheme}-03-queens-conflito`);
 
     await generate(page, "Tango", ".tboard");
@@ -121,11 +122,11 @@ try {
   // Celular
   for (const scheme of ["light", "dark"]) {
     const { ctx, page } = await newPage(browser, { scheme, width: 360, height: 760 });
+    await generate(page, "Queens", ".qboard");
+    await shot(page, `mobile-${scheme}-02-queens`);
     await page.goto(BASE);
     await page.waitForSelector(".marks");
     await shot(page, `mobile-${scheme}-01-marcas`);
-    await generate(page, "Queens", ".qboard");
-    await shot(page, `mobile-${scheme}-02-queens`);
     await generate(page, "Mini Sudoku", ".sboard");
     await shot(page, `mobile-${scheme}-03-sudoku`);
     const sw = await page.evaluate(() => document.documentElement.scrollWidth);
