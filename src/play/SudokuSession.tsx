@@ -9,6 +9,7 @@ import {
 import { conflictingCells, isSudokuSolved } from "../engines/mini-sudoku/rules";
 import { finishAttempt } from "../persist/db";
 import { SudokuBoardView } from "../ui/boards/SudokuBoard";
+import { HintButton } from "./HintButton";
 import { formatElapsed } from "./time";
 
 type Props = {
@@ -130,9 +131,7 @@ export function SudokuSession({ payload, attemptId, startedAt, onReplay }: Props
         <button type="button" disabled={solved} onClick={() => push(initialSudokuState(board))}>
           Limpar
         </button>
-        <button type="button" disabled>
-          Dica
-        </button>
+        <HintButton />
         <span className="timer" aria-live="polite">
           {formatElapsed((stoppedAt ?? now) - startedAt)}
         </span>

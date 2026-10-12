@@ -10,6 +10,7 @@ import {
 import { conflictingCells, isZipSolved } from "../engines/zip/rules";
 import { finishAttempt } from "../persist/db";
 import { ZipBoardView } from "../ui/boards/ZipBoard";
+import { HintButton } from "./HintButton";
 import { formatElapsed } from "./time";
 
 type Props = {
@@ -154,9 +155,7 @@ export function ZipSession({ payload, attemptId, startedAt, onReplay }: Props) {
         <button type="button" disabled={solved} onClick={() => push(initialZipState())}>
           Limpar
         </button>
-        <button type="button" disabled>
-          Dica
-        </button>
+        <HintButton />
         <span className="timer" aria-live="polite">
           {formatElapsed((stoppedAt ?? now) - startedAt)}
         </span>

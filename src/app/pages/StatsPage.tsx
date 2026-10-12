@@ -42,7 +42,7 @@ export function StatsPage() {
   return (
     <section>
       <header className="mesa__head">
-        <p className="eyebrow">Marcas</p>
+        <p className="eyebrow">Jogos</p>
         <h2>Escolha um jogo</h2>
         <p className="lede">
           {totalP === 0

@@ -7,9 +7,10 @@ import {
   type PatchRect,
   type PatchesState,
 } from "../engines/patches/model";
-import { conflictingCells, isPatchesSolved, rectValid, usedCells } from "../engines/patches/rules";
+import { conflictingCells, isPatchesSolved } from "../engines/patches/rules";
 import { finishAttempt } from "../persist/db";
 import { PatchesBoardView, rectFromCorners } from "../ui/boards/PatchesBoard";
+import { HintButton } from "./HintButton";
 import { formatElapsed } from "./time";
 
 type Props = {
@@ -28,6 +29,8 @@ export function PatchesSession({ payload, attemptId, startedAt, onReplay }: Prop
   const [stoppedAt, setStoppedAt] = useState<number | null>(null);
   const [draft, setDraft] = useState<PatchRect | null>(null);
   const origin = useRef<number | null>(null);
+  const pressedRect = useRef<number | null>(null);
+  const moved = useRef(false);
   const draftRef = useRef<PatchRect | null>(null);
   const cursorRef = useRef(0);
   const historyRef = useRef(history);
@@ -56,22 +59,29 @@ export function PatchesSession({ payload, attemptId, startedAt, onReplay }: Prop
     });
   }, [attemptId, board, startedAt, state]);
 
+  // Soltar o arraste sempre grava o retângulo, mesmo que ainda esteja errado:
+  // ele aparece em vermelho e a conferência acontece na tela, não some.
+  // Um clique (sem arrastar) numa área já desenhada apaga essa área.
   useEffect(() => {
     function up() {
       const start = origin.current;
       const current = draftRef.current;
+      const removeIndex = pressedRect.current;
+      const wasMoved = moved.current;
       origin.current = null;
       draftRef.current = null;
+      pressedRect.current = null;
+      moved.current = false;
       setDraft(null);
-      if (!current || start == null) return;
+      if (start == null) return;
 
       const c = cursorRef.current;
       const rects = historyRef.current[c].rects;
-      const used = usedCells(board, rects);
-      if (rectValid(board, current, used) != null) return;
-
-      setHistory((prev) => [...prev.slice(0, c + 1), { rects: [...rects, current] }]);
-      setCursor(c + 1);
+      if (!wasMoved && removeIndex != null) {
+        commit({ rects: rects.filter((_, i) => i !== removeIndex) }, c);
+        return;
+      }
+      if (current) commit({ rects: [...rects, current] }, c);
     }
     window.addEventListener("pointerup", up);
     window.addEventListener("pointercancel", up);
@@ -81,6 +91,11 @@ export function PatchesSession({ payload, attemptId, startedAt, onReplay }: Prop
     };
   }, [board]);
 
+  function commit(next: PatchesState, from: number) {
+    setHistory((prev) => [...prev.slice(0, from + 1), next]);
+    setCursor(from + 1);
+  }
+
   function push(next: PatchesState) {
     setHistory((prev) => [...prev.slice(0, cursor + 1), next]);
     setCursor((c) => c + 1);
@@ -89,14 +104,9 @@ export function PatchesSession({ payload, attemptId, startedAt, onReplay }: Prop
   function onDown(at: number) {
     if (solved) return;
     const owner = state.rects.findIndex((rect) => rectCells(board, rect).includes(at));
-    if (owner >= 0) {
-      origin.current = null;
-      draftRef.current = null;
-      setDraft(null);
-      push({ rects: state.rects.filter((_, i) => i !== owner) });
-      return;
-    }
     origin.current = at;
+    pressedRect.current = owner >= 0 ? owner : null;
+    moved.current = false;
     const next = rectFromCorners(board, at, at);
     draftRef.current = next;
     setDraft(next);
@@ -104,6 +114,7 @@ export function PatchesSession({ payload, attemptId, startedAt, onReplay }: Prop
 
   function onMove(at: number) {
     if (origin.current == null || solved) return;
+    if (at !== origin.current) moved.current = true;
     const next = rectFromCorners(board, origin.current, at);
     draftRef.current = next;
     setDraft(next);
@@ -138,9 +149,7 @@ export function PatchesSession({ payload, attemptId, startedAt, onReplay }: Prop
         <button type="button" disabled={solved} onClick={() => push(initialPatchesState())}>
           Limpar
         </button>
-        <button type="button" disabled>
-          Dica
-        </button>
+        <HintButton />
         <span className="timer" aria-live="polite">
           {formatElapsed((stoppedAt ?? now) - startedAt)}
         </span>
@@ -158,8 +167,8 @@ export function PatchesSession({ payload, attemptId, startedAt, onReplay }: Prop
         </div>
       ) : (
         <p className="lede">
-          Arraste a partir de uma pista para cobrir o retângulo. O número é a área. □ quadrado, ▯
-          alto, ▭ largo. Clique num retalho para desfazer.
+          Arraste sobre as casas para desenhar um retângulo. O número é a área; o desenho ao lado
+          mostra a forma pedida (quadrado, em pé ou deitado). Um clique numa área desenhada a apaga.
         </p>
       )}
     </>

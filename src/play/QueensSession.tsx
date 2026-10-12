@@ -5,6 +5,7 @@ import { autoMarkFromCrown, conflictingCells, isQueensSolved } from "../engines/
 import { finishAttempt } from "../persist/db";
 import { loadSettings } from "../persist/settings";
 import { QueensBoard } from "../ui/boards/QueensBoard";
+import { HintButton } from "./HintButton";
 import { formatElapsed } from "./time";
 
 type Props = {
@@ -118,9 +119,7 @@ export function QueensSession({ payload, attemptId, startedAt, onReplay }: Props
         >
           Limpar
         </button>
-        <button type="button" disabled>
-          Dica
-        </button>
+        <HintButton />
         <span className="timer" aria-live="polite">
           {formatElapsed((stoppedAt ?? now) - startedAt)}
         </span>

@@ -8,6 +8,7 @@ import {
 import { conflictingCells, isTangoSolved } from "../engines/tango/rules";
 import { finishAttempt } from "../persist/db";
 import { TangoBoard } from "../ui/boards/TangoBoard";
+import { HintButton } from "./HintButton";
 import { formatElapsed } from "./time";
 
 type Props = {
@@ -138,9 +139,7 @@ export function TangoSession({ payload, attemptId, startedAt, onReplay }: Props)
         >
           Limpar
         </button>
-        <button type="button" disabled>
-          Dica
-        </button>
+        <HintButton />
         <span className="timer" aria-live="polite">
           {formatElapsed((stoppedAt ?? now) - startedAt)}
         </span>
