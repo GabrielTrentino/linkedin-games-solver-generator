@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { GAMES, isGameId, type GameId } from "../../engines/core/types";
 import { listAttempts, listPuzzles, type AttemptRow, type PuzzleRow } from "../../persist/db";
-import { formatElapsed, formatWhen } from "../../play/time";
+import { formatDateTime, formatElapsed, niceStep } from "../../play/time";
 import { AttemptsTable } from "./AttemptsTable";
 
 type Point = {
@@ -62,24 +62,34 @@ export function HistoryChartPage() {
     );
   }
 
-  const pad = { top: 16, right: 12, bottom: 36, left: 48 };
-  const width = 640;
-  const height = 280;
-  const minX = points[0].at;
-  const maxX = points[points.length - 1].at;
-  const maxY = Math.max(...points.map((p) => p.elapsedMs), 1000);
-  const spanX = Math.max(maxX - minX, 1);
+  const pad = { top: 18, right: 22, bottom: 40, left: 62 };
+  const width = 680;
+  const height = 300;
+  const plotW = width - pad.left - pad.right;
+  const plotH = height - pad.top - pad.bottom;
 
-  function xOf(at: number) {
-    return pad.left + ((at - minX) / spanX) * (width - pad.left - pad.right);
-  }
-  function yOf(ms: number) {
-    return pad.top + (1 - ms / maxY) * (height - pad.top - pad.bottom);
-  }
+  // Eixo Y: tempo, com marcas e grades em passos redondos.
+  const rawMax = Math.max(...points.map((p) => p.elapsedMs), 1000);
+  const step = niceStep(rawMax);
+  const maxY = Math.ceil(rawMax / step) * step;
+  const yTicks: number[] = [];
+  for (let t = 0; t <= maxY; t += step) yTicks.push(t);
 
-  const line = points.map((p) => `${xOf(p.at)},${yOf(p.elapsedMs)}`).join(" ");
+  // Eixo X: número da partida (1 = primeira resolução), em ordem cronológica.
+  const n = points.length;
+  const xOf = (i: number) => (n === 1 ? pad.left + plotW / 2 : pad.left + (i / (n - 1)) * plotW);
+  const yOf = (ms: number) => pad.top + (1 - ms / maxY) * plotH;
+  const xTickEvery = Math.max(1, Math.ceil(n / 10));
+  const xTicks = points.map((_, i) => i).filter((i) => i % xTickEvery === 0 || i === n - 1);
+
+  const line = points.map((p, i) => `${xOf(i)},${yOf(p.elapsedMs)}`).join(" ");
   const active = hover != null ? points[hover] : null;
   const name = GAMES.find((g) => g.id === game)?.name;
+
+  // Tooltip dentro do SVG: vai para a esquerda quando o ponto está perto da borda direita.
+  const tip = hover != null ? { x: xOf(hover), y: yOf(points[hover].elapsedMs) } : null;
+  const tipW = 176;
+  const tipLeft = tip ? tip.x + tipW + 14 > width : false;
 
   return (
     <div className="chart">
@@ -87,49 +97,89 @@ export function HistoryChartPage() {
         className="chart__svg"
         viewBox={`0 0 ${width} ${height}`}
         role="img"
-        aria-label={`Tempo de resolução de ${name}`}
+        aria-label={`Tempo de resolução de ${name}, por partida`}
       >
-        <line
-          x1={pad.left}
-          y1={height - pad.bottom}
-          x2={width - pad.right}
-          y2={height - pad.bottom}
-          stroke="currentColor"
-        />
-        <line
-          x1={pad.left}
-          y1={pad.top}
-          x2={pad.left}
-          y2={height - pad.bottom}
-          stroke="currentColor"
-        />
-        <text x={pad.left} y={12} fontSize="11" fill="currentColor">
-          {formatElapsed(maxY)}
+        {yTicks.map((t) => (
+          <g key={`y-${t}`}>
+            <line
+              className="chart__grid"
+              x1={pad.left}
+              x2={width - pad.right}
+              y1={yOf(t)}
+              y2={yOf(t)}
+            />
+            <text className="chart__tick" x={pad.left - 10} y={yOf(t) + 4} textAnchor="end">
+              {formatElapsed(t)}
+            </text>
+          </g>
+        ))}
+        {xTicks.map((i) => (
+          <g key={`x-${i}`}>
+            <line className="chart__grid chart__grid--x" x1={xOf(i)} x2={xOf(i)} y1={pad.top} y2={height - pad.bottom} />
+            <text className="chart__tick" x={xOf(i)} y={height - pad.bottom + 18} textAnchor="middle">
+              {i + 1}
+            </text>
+          </g>
+        ))}
+        <line className="chart__axis" x1={pad.left} x2={width - pad.right} y1={height - pad.bottom} y2={height - pad.bottom} />
+        <line className="chart__axis" x1={pad.left} x2={pad.left} y1={pad.top} y2={height - pad.bottom} />
+        <text className="chart__label" x={width - pad.right} y={height - 6} textAnchor="end">
+          partida
         </text>
-        <text x={pad.left} y={height - 12} fontSize="11" fill="currentColor">
-          {formatWhen(minX)}
+        <text className="chart__label" x={6} y={pad.top - 4}>
+          tempo
         </text>
-        <text x={width - pad.right} y={height - 12} fontSize="11" fill="currentColor" textAnchor="end">
-          {formatWhen(maxX)}
-        </text>
-        <polyline fill="none" style={{ stroke: "var(--copper)" }} strokeWidth="2" points={line} />
+
+        <polyline className="chart__line" points={line} />
         {points.map((p, i) => (
           <circle
             key={`${p.puzzleId}-${p.at}-${i}`}
-            cx={xOf(p.at)}
+            className={hover === i ? "chart__dot is-active" : "chart__dot"}
+            cx={xOf(i)}
             cy={yOf(p.elapsedMs)}
-            r={hover === i ? 6 : 4}
-            style={{ fill: "var(--ink)" }}
+            r={hover === i ? 6 : 4.5}
+            tabIndex={0}
             onMouseEnter={() => setHover(i)}
             onMouseLeave={() => setHover(null)}
+            onFocus={() => setHover(i)}
+            onBlur={() => setHover(null)}
           />
         ))}
+
+        {tip && active ? (
+          <g className="chart__tip" pointerEvents="none">
+            <rect
+              x={tipLeft ? tip.x - tipW - 12 : tip.x + 12}
+              y={Math.max(pad.top, tip.y - 56)}
+              width={tipW}
+              height={58}
+              rx={4}
+            />
+            <text x={tipLeft ? tip.x - tipW - 4 : tip.x + 20} y={Math.max(pad.top, tip.y - 56) + 18}>
+              Partida {hover! + 1} · {formatElapsed(active.elapsedMs)}
+            </text>
+            <text
+              className="chart__tip-sub"
+              x={tipLeft ? tip.x - tipW - 4 : tip.x + 20}
+              y={Math.max(pad.top, tip.y - 56) + 36}
+            >
+              {formatDateTime(active.startedAt)}
+            </text>
+            <text
+              className="chart__tip-sub"
+              x={tipLeft ? tip.x - tipW - 4 : tip.x + 20}
+              y={Math.max(pad.top, tip.y - 56) + 50}
+            >
+              seed {active.seed}
+            </text>
+          </g>
+        ) : null}
       </svg>
 
       <p className="lede">
         {active
-          ? `seed ${active.seed} · ${formatElapsed(active.elapsedMs)} em ${formatWhen(active.at)}`
-          : "Cada ponto é uma resolução. Passe o mouse para ver seed e horário."}
+          ? `Partida ${hover! + 1}: ${formatElapsed(active.elapsedMs)}, em ${formatDateTime(active.startedAt)}.`
+          : "Cada ponto é uma resolução, em ordem de partida. Passe o mouse para ver data, hora e tempo."}
       </p>
 
       <h3>Registros</h3>

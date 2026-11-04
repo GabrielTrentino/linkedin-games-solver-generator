@@ -27,6 +27,15 @@ export function ZipBoardView({ board, path, conflicts, disabled, onHover, onDown
     onHover(Number((btn as HTMLElement).dataset.zipAt));
   }
 
+  // Traçado no sentido em que foi desenhado: do 1 para a última casa.
+  // Passa pelo centro das casas (não preenche a casa inteira).
+  const centers = path.map((at) => ({
+    x: zipCol(size, at) + 0.5,
+    y: zipRow(size, at) + 0.5,
+  }));
+  const d = centers.map((p, i) => `${i === 0 ? "M" : "L"}${p.x} ${p.y}`).join(" ");
+  const head = centers[centers.length - 1];
+
   return (
     <div
       className="zboard"
@@ -38,6 +47,17 @@ export function ZipBoardView({ board, path, conflicts, disabled, onHover, onDown
         cellFromPoint(event.clientX, event.clientY, event.currentTarget);
       }}
     >
+      {centers.length > 0 ? (
+        <svg
+          className="zpath"
+          viewBox={`0 0 ${size} ${size}`}
+          preserveAspectRatio="none"
+          aria-hidden
+        >
+          <path d={d} className="zpath__line" />
+          {centers.length > 1 ? <circle cx={head.x} cy={head.y} r="0.16" className="zpath__head" /> : null}
+        </svg>
+      ) : null}
       {Array.from({ length: size * size }, (_, at) => {
         const row = zipRow(size, at);
         const col = zipCol(size, at);
@@ -46,7 +66,6 @@ export function ZipBoardView({ board, path, conflicts, disabled, onHover, onDown
         const on = order.has(at);
         const classes = [
           "zcell",
-          on ? "is-path" : "",
           conflicts.has(at) ? "is-conflict" : "",
           wallE ? "zcell--wall-e" : "",
           wallS ? "zcell--wall-s" : "",

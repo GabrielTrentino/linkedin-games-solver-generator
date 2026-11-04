@@ -22,7 +22,7 @@ export function HistoryLayout() {
       <header className="mesa__head">
         <p className="eyebrow">
           <Link className="text-link" to="/">
-            Marcas
+            Jogos
           </Link>
           {" / "}
           {game.name}

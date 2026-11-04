@@ -226,6 +226,36 @@ button:disabled {
   font-weight: 700;
 }
 
+.spine__sub {
+  list-style: none;
+  margin: 0 0 0.35rem;
+  padding: 0 0 0 0.85rem;
+  display: grid;
+  gap: 0.1rem;
+  border-left: 1px solid var(--line);
+}
+
+.spine__sublink {
+  display: block;
+  padding: 0.25rem 0;
+  text-decoration: none;
+  color: var(--mute);
+  font-size: 0.95rem;
+}
+
+.spine__sublink:hover {
+  color: var(--ink);
+}
+
+.spine__sublink.is-active {
+  color: var(--ink);
+  font-weight: 700;
+  text-decoration: underline;
+  text-decoration-color: var(--copper);
+  text-decoration-thickness: 2px;
+  text-underline-offset: 4px;
+}
+
 .sheet {
   display: flex;
   flex-direction: column;
@@ -654,26 +684,49 @@ button:disabled {
 }
 
 .zboard {
+  position: relative;
   display: grid;
   width: min(100%, 26rem);
   border: 3px solid var(--rule);
-  background: var(--board-bg);
+  background: var(--cell);
   gap: 0;
   touch-action: none;
 }
 
+/* Traçado sobre as casas: fica atrás do texto dos números e não cobre a casa. */
+.zpath {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+  pointer-events: none;
+  overflow: visible;
+}
+
+.zpath__line {
+  fill: none;
+  stroke: var(--copper);
+  stroke-width: 0.3;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  opacity: 0.92;
+}
+
+.zpath__head {
+  fill: var(--copper);
+}
+
 .zcell {
+  position: relative;
+  z-index: 1;
   aspect-ratio: 1;
   border: 1px solid var(--zip-line);
-  background: var(--cell);
+  background: transparent;
   font-family: "IBM Plex Mono", monospace;
   font-weight: 800;
   padding: 0;
   color: var(--ink);
-}
-
-.zcell.is-path {
-  background: var(--path-bg);
 }
 
 .zcell--wall-e {
@@ -690,7 +743,7 @@ button:disabled {
 
 .pboard {
   display: grid;
-  width: min(100%, 28rem);
+  width: min(100%, 34rem);
   border: 3px solid var(--rule);
   background: var(--rule);
   gap: 1px;
@@ -704,8 +757,26 @@ button:disabled {
   padding: 0;
   display: grid;
   place-items: center;
+  align-content: center;
   position: relative;
   color: var(--ink);
+}
+
+/* Divisas do retângulo: borda grossa só onde a área muda de pista. */
+.pcell--n {
+  border-top: 4px solid var(--rule);
+}
+
+.pcell--s {
+  border-bottom: 4px solid var(--rule);
+}
+
+.pcell--w {
+  border-left: 4px solid var(--rule);
+}
+
+.pcell--e {
+  border-right: 4px solid var(--rule);
 }
 
 .pcell.is-tinted {
@@ -725,14 +796,24 @@ button:disabled {
 .pcell__area {
   font-family: "IBM Plex Mono", monospace;
   font-weight: 800;
-  font-size: clamp(0.8rem, 3vw, 1.1rem);
+  font-size: clamp(1.1rem, 4.2vw, 1.75rem);
+  line-height: 1;
 }
 
 .pcell__shape {
-  position: absolute;
-  right: 0.15rem;
-  bottom: 0.05rem;
-  font-size: 0.7rem;
+  display: block;
+  width: clamp(14px, 3.6vw, 22px);
+  height: clamp(14px, 3.6vw, 22px);
+  margin-top: 0.2rem;
+  color: var(--cell-ink);
+}
+
+.pcell.is-tinted .pcell__shape {
+  color: var(--cell-ink);
+}
+
+.pcell:not(.is-tinted) .pcell__shape {
+  color: var(--mute);
 }
 
 .ppreview .is-clue {
@@ -858,11 +939,81 @@ button:disabled {
 }
 
 .chart__svg {
-  width: min(100%, 40rem);
+  width: min(100%, 44rem);
   height: auto;
   background: var(--surface);
   border: 1px solid var(--line);
   color: var(--mute);
+  overflow: visible;
+}
+
+.chart__grid {
+  stroke: var(--line);
+  stroke-width: 1;
+  stroke-dasharray: 3 4;
+}
+
+.chart__grid--x {
+  stroke-dasharray: none;
+  opacity: 0.45;
+}
+
+.chart__axis {
+  stroke: var(--ink);
+  stroke-width: 1.2;
+}
+
+.chart__tick {
+  fill: var(--mute);
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 12px;
+}
+
+.chart__label {
+  fill: var(--mute);
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.chart__line {
+  fill: none;
+  stroke: var(--copper);
+  stroke-width: 2;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+
+.chart__dot {
+  fill: var(--ink);
+  stroke: var(--surface);
+  stroke-width: 2;
+  cursor: pointer;
+  outline: none;
+}
+
+.chart__dot:focus-visible {
+  stroke: var(--copper);
+  stroke-width: 3;
+}
+
+.chart__tip rect {
+  fill: var(--ink);
+  opacity: 0.95;
+}
+
+.chart__tip text {
+  fill: var(--sheet);
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.chart__tip .chart__tip-sub {
+  font-size: 11.5px;
+  font-weight: 400;
+  opacity: 0.9;
 }
 
 .game-settings {
@@ -1200,7 +1351,21 @@ button:disabled {
   .spine__nav {
     flex-direction: row;
     flex-wrap: wrap;
+    align-items: center;
     gap: 0.2rem 0.9rem;
+  }
+
+  .spine__sub {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.2rem 0.9rem;
+    margin: 0;
+    padding: 0;
+    border-left: 0;
+  }
+
+  .spine__sublink {
+    padding: 0.4rem 0;
   }
 
   .spine__link {
@@ -1280,4 +1445,14 @@ button:disabled {
     transition: none !important;
     animation: none !important;
   }
+}
+
+/* ---------- Dica desabilitada: o motivo aparece ao passar o mouse ---------- */
+
+.hint-wrap {
+  display: inline-flex;
+}
+
+.hint-wrap button:disabled {
+  cursor: help;
 }
